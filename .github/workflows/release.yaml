@@ -78,9 +78,16 @@ jobs:
           extra=`sed -E -n -e 's/^[[:blank:]]*#define[[:blank:]]+H_VER_EXTRA[[:blank:]]+//p' "$verfile" | cut -d ' ' -f 1 | cut -f 1 | cut -d '/' -f 1`
           version="$major"."$minor"."$patch"
           tag=vauto"$version"
-          if test x$extra != x0 ; then
+          vertype=`sed -E -n -e 's/^[[:blank:]]*constexpr[[:blank:]]+VersionStatusType[[:blank:]]+VERSION_STATUS[[:blank:]]+=[[:blank:]]+VersionStatusType:://p' "$verfile" | cut -d ' ' -f 1 | cut -d ';' -f 1`
+          if test x${vertype} == xALPHA ; then
             version="${version}-Alpha${extra}"
             tag="${tag}-alpha${extra}"
+          elif test x${vertype} == xBETA ; then
+            version="${version}-Beta${extra}"
+            tag="${tag}-beta${extra}"
+          elif test x${vertype} == xRELEASE_CANDIDATE ; then
+            version="${version}-RC${extra}"
+            tag="${tag}-rc${extra}"
           fi
           head=`git rev-parse --verify --short HEAD`
           version="${version}-${head}"
