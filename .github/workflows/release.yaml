@@ -163,8 +163,8 @@ jobs:
           ./bootstrap
           ./configure --disable-japanese --disable-net
           make distdir
-          n_name=`find . -maxdepth 1 -type d -name "${{ steps.store.config.outputs.name }}"'-*' -print | wc -l`
-          name=`find . -maxdepth 1 -type d -name "${{ steps.store.config.outputs.name }}"'-*' -print`
+          n_name=`find . -maxdepth 1 -type d -name "${{ steps.store_config.outputs.name }}"'-*' -print | wc -l`
+          name=`find . -maxdepth 1 -type d -name "${{ steps.store_config.outputs.name }}"'-*' -print`
           test x"$n_name" != x1 || exit 1
           test x"$name" == x"$out" || mv "$name" "$out"
           tar -cBf - "$out" | gzip -c - >"$out".tar.gz
