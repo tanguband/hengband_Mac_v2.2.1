@@ -451,7 +451,7 @@ jobs:
           name: ${{ env.MAC_JAPANESE_ARCHIVE_ARTIFACT }}
 
       - name: Populate Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@4634c16e79c963813287e889244c50009e7f0981
         with:
           tag_name: "${{ steps.store_config.outputs.tag }}"
           name: ${{ steps.store_config.outputs.version }}
