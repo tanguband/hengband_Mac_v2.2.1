@@ -47,7 +47,7 @@ ColoredChar image_object()
 {
     if (use_graphics) {
         const auto &baseitem = baseitems_info[randint1(baseitems_info.size() - 1)];
-        return { baseitem.x_attr, baseitem.x_char };
+        return baseitem.cc_config;
     }
 
     return { randnum1<uint8_t>(15), rand_choice(image_objects) };
