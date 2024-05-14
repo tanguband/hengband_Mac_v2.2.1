@@ -15,12 +15,11 @@ void reset_visuals(PlayerType *player_ptr)
 {
     for (auto &terrain : TerrainList::get_instance()) {
         for (int j = 0; j < F_LIT_MAX; j++) {
-            terrain.x_attr[j] = terrain.d_attr[j];
-            terrain.x_char[j] = terrain.d_char[j];
+            terrain.cc_configs[j] = terrain.cc_defs[j];
         }
     }
 
-    for (auto &baseitem : baseitems_info) {
+    for (auto &baseitem : BaseitemList::get_instance()) {
         baseitem.cc_config = baseitem.cc_def;
     }
 

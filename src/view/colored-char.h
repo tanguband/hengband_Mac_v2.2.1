@@ -10,10 +10,25 @@
 
 class ColoredChar {
 public:
-    ColoredChar(uint8_t color, char character)
+    constexpr ColoredChar()
+        : ColoredChar(0, '\0')
+    {
+    }
+
+    constexpr ColoredChar(uint8_t color, char character)
         : color(color)
         , character(character)
     {
+    }
+
+    bool operator==(const ColoredChar &other) const
+    {
+        return (this->color == other.color) && (this->character == other.character);
+    }
+
+    bool operator!=(const ColoredChar &other) const
+    {
+        return !(*this == other);
     }
 
     uint8_t color; //! @todo TERM_COLOR 型エイリアスをenum class に変えたら型を差し替える.

@@ -5,10 +5,56 @@
  */
 
 #include "system/terrain-type-definition.h"
+#include "grid/feature.h" // 暫定、is_ascii_graphics() は別ファイルに移す.
+#include "grid/lighting-colors-table.h"
+
+TerrainType::TerrainType()
+    : cc_defs(DEFAULT_CC_MAP)
+    , cc_configs(DEFAULT_CC_MAP)
+{
+}
 
 bool TerrainType::is_permanent_wall() const
 {
     return this->flags.has_all_of({ TerrainCharacteristics::WALL, TerrainCharacteristics::PERMANENT });
+}
+
+/*!
+ * @brief 地形のライティング状況をリセットする
+ * @param is_config 設定値ならばtrue、定義値ならばfalse (定義値が入るのは初期化時のみ)
+ */
+void TerrainType::reset_lighting(bool is_config)
+{
+    auto &cc_map = is_config ? this->cc_configs : this->cc_defs;
+    if (is_ascii_graphics(cc_map[F_LIT_STANDARD].color)) {
+        this->reset_lighting_ascii(cc_map);
+        return;
+    }
+
+    this->reset_lighting_graphics(cc_map);
+}
+
+void TerrainType::reset_lighting_ascii(std::map<int, ColoredChar> &cc_map)
+{
+    const auto color_standard = cc_map[F_LIT_STANDARD].color;
+    const auto character_standard = cc_map[F_LIT_STANDARD].character;
+    cc_map[F_LIT_LITE].color = lighting_colours[color_standard & 0x0f][0];
+    cc_map[F_LIT_DARK].color = lighting_colours[color_standard & 0x0f][1];
+    for (int i = F_LIT_NS_BEGIN; i < F_LIT_MAX; i++) {
+        cc_map[i].character = character_standard;
+    }
+}
+
+void TerrainType::reset_lighting_graphics(std::map<int, ColoredChar> &cc_map)
+{
+    const auto color_standard = cc_map[F_LIT_STANDARD].color;
+    const auto character_standard = cc_map[F_LIT_STANDARD].character;
+    for (auto i = F_LIT_NS_BEGIN; i < F_LIT_MAX; i++) {
+        cc_map[i].color = color_standard;
+    }
+
+    cc_map[F_LIT_LITE].character = character_standard + 2;
+    cc_map[F_LIT_DARK].character = character_standard + 1;
 }
 
 TerrainList TerrainList::instance{};

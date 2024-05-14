@@ -73,12 +73,13 @@ static errr interpret_k_token(char *buf)
     const auto i = static_cast<short>(std::stoi(zz[0], nullptr, 0));
     const auto color = static_cast<uint8_t>(std::stoi(zz[1], nullptr, 0));
     const auto character = static_cast<char>(std::stoi(zz[2], nullptr, 0));
-    if (i >= static_cast<int>(baseitems_info.size())) {
+    auto &baseitems = BaseitemList::get_instance();
+    if (i >= static_cast<int>(baseitems.size())) {
         return 1;
     }
 
     /* Allow TERM_DARK text */
-    auto &baseitem = baseitems_info[i];
+    auto &baseitem = baseitems.get_baseitem(i);
     if ((color > 0) || (((character & 0x80) == 0) && (character != 0))) {
         baseitem.cc_config.color = color;
     }
@@ -99,47 +100,51 @@ static errr interpret_k_token(char *buf)
 static errr decide_feature_type(int i, int num, char **zz)
 {
     auto &terrain = TerrainList::get_instance()[static_cast<short>(i)];
-    TERM_COLOR n1 = (TERM_COLOR)strtol(zz[1], nullptr, 0);
-    auto n2 = static_cast<char>(strtol(zz[2], nullptr, 0));
-    if (n1 || (!(n2 & 0x80) && n2)) {
-        terrain.x_attr[F_LIT_STANDARD] = n1;
-    } /* Allow TERM_DARK text */
-    if (n2) {
-        terrain.x_char[F_LIT_STANDARD] = n2;
+    auto color_token = static_cast<uint8_t>(std::stoi(zz[1], nullptr, 0));
+    auto character_token = static_cast<char>(std::stoi(zz[2], nullptr, 0));
+    const auto has_character_token = character_token != '\0';
+
+    /* Allow TERM_DARK text */
+    if ((color_token != 0) || (!(character_token & 0x80) && has_character_token)) {
+        terrain.cc_configs[F_LIT_STANDARD].color = color_token;
+    }
+
+    if (has_character_token) {
+        terrain.cc_configs[F_LIT_STANDARD].character = character_token;
     }
 
     switch (num) {
     case 3: {
         /* No lighting support */
-        n1 = terrain.x_attr[F_LIT_STANDARD];
-        n2 = terrain.x_char[F_LIT_STANDARD];
-        for (int j = F_LIT_NS_BEGIN; j < F_LIT_MAX; j++) {
-            terrain.x_attr[j] = n1;
-            terrain.x_char[j] = n2;
+        const auto &cc = terrain.cc_configs.at(F_LIT_STANDARD);
+        for (auto j = F_LIT_NS_BEGIN; j < F_LIT_MAX; j++) {
+            terrain.cc_configs[j] = cc;
         }
 
         return 0;
     }
-    case 4: {
-        /* Use default lighting */
-        apply_default_feat_lighting(terrain.x_attr, terrain.x_char);
+    case 4:
+        terrain.reset_lighting();
         return 0;
-    }
-    case F_LIT_MAX * 2 + 1: {
+    case F_LIT_MAX * 2 + 1:
         /* Use desired lighting */
         for (int j = F_LIT_NS_BEGIN; j < F_LIT_MAX; j++) {
-            n1 = (TERM_COLOR)strtol(zz[j * 2 + 1], nullptr, 0);
-            n2 = static_cast<char>(strtol(zz[j * 2 + 2], nullptr, 0));
-            if (n1 || (!(n2 & 0x80) && n2)) {
-                terrain.x_attr[j] = n1;
-            } /* Allow TERM_DARK text */
-            if (n2) {
-                terrain.x_char[j] = n2;
+            const auto color = static_cast<uint8_t>(std::stoi(zz[j * 2 + 1], nullptr, 0));
+            const auto character = static_cast<char>(std::stoi(zz[j * 2 + 2], nullptr, 0));
+            const auto has_character = character != '\0';
+            auto &cc = terrain.cc_configs[j];
+
+            /* Allow TERM_DARK text */
+            if ((color != 0) || (!(character & 0x80) && has_character)) {
+                cc.color = color;
+            }
+
+            if (has_character) {
+                cc.character = character;
             }
         }
 
         return 0;
-    }
     default:
         return 0;
     }
@@ -208,7 +213,7 @@ static errr interpret_u_token(char *buf)
     const auto tval = i2enum<ItemKindType>(std::stoi(zz[0], nullptr, 0));
     const auto n1 = static_cast<uint8_t>(std::stoi(zz[1], nullptr, 0));
     const auto n2 = static_cast<char>(strtol(zz[2], nullptr, 0));
-    for (auto &baseitem : baseitems_info) {
+    for (auto &baseitem : BaseitemList::get_instance()) {
         if (baseitem.is_valid() && (baseitem.bi_key.tval() == tval)) {
             if (n1) {
                 baseitem.cc_def.color = n1;

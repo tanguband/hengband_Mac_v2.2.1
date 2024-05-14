@@ -149,7 +149,7 @@ void do_cmd_visuals(PlayerType *player_ptr)
             }
 
             auto_dump_printf(auto_dump_stream, _("\n# アイテムの[色/文字]の設定\n\n", "\n# Object attr/char definitions\n\n"));
-            for (const auto &baseitem : baseitems_info) {
+            for (const auto &baseitem : BaseitemList::get_instance()) {
                 if (!baseitem.is_valid()) {
                     continue;
                 }
@@ -196,9 +196,12 @@ void do_cmd_visuals(PlayerType *player_ptr)
                 }
 
                 auto_dump_printf(auto_dump_stream, "# %s\n", (terrain.name.data()));
-                auto_dump_printf(auto_dump_stream, "F:%d:0x%02X/0x%02X:0x%02X/0x%02X:0x%02X/0x%02X\n\n", terrain.idx, (byte)(terrain.x_attr[F_LIT_STANDARD]),
-                    (byte)(terrain.x_char[F_LIT_STANDARD]), (byte)(terrain.x_attr[F_LIT_LITE]), (byte)(terrain.x_char[F_LIT_LITE]),
-                    (byte)(terrain.x_attr[F_LIT_DARK]), (byte)(terrain.x_char[F_LIT_DARK]));
+                const auto &cc_standard = terrain.cc_configs.at(F_LIT_STANDARD);
+                const auto &cc_lite = terrain.cc_configs.at(F_LIT_LITE);
+                const auto &cc_dark = terrain.cc_configs.at(F_LIT_DARK);
+                auto_dump_printf(auto_dump_stream, "F:%d:0x%02X/0x%02X:0x%02X/0x%02X:0x%02X/0x%02X\n\n", terrain.idx, cc_standard.color,
+                    static_cast<uint8_t>(cc_standard.character), cc_lite.color, static_cast<uint8_t>(cc_lite.character),
+                    cc_dark.color, static_cast<uint8_t>(cc_dark.character));
             }
 
             close_auto_dump(&auto_dump_stream, mark);
@@ -285,8 +288,9 @@ void do_cmd_visuals(PlayerType *player_ptr)
             static auto choice_msg = _("アイテムの[色/文字]を変更します", "Change object attr/chars");
             static short bi_id = 0;
             prt(format(_("コマンド: %s", "Command: %s"), choice_msg), 15, 0);
+            auto &baseitems = BaseitemList::get_instance();
             while (true) {
-                auto &baseitem = baseitems_info[bi_id];
+                auto &baseitem = baseitems.get_baseitem(bi_id);
                 int c;
                 const auto &cc_def = baseitem.cc_def;
                 auto &cc_config = baseitem.cc_config;
@@ -319,14 +323,14 @@ void do_cmd_visuals(PlayerType *player_ptr)
                     std::optional<short> new_baseitem_id;
                     const auto previous_bi_id = bi_id;
                     while (true) {
-                        new_baseitem_id = input_new_visual_id(ch, bi_id, static_cast<short>(baseitems_info.size()));
+                        new_baseitem_id = input_new_visual_id(ch, bi_id, static_cast<short>(baseitems.size()));
                         if (!new_baseitem_id) {
                             bi_id = previous_bi_id;
                             break;
                         }
 
                         bi_id = *new_baseitem_id;
-                        if (baseitems_info[bi_id].is_valid()) {
+                        if (baseitems.get_baseitem(bi_id).is_valid()) {
                             break;
                         }
                     }
@@ -372,21 +376,18 @@ void do_cmd_visuals(PlayerType *player_ptr)
             while (true) {
                 auto &terrain = terrains[terrain_id];
                 int c;
-                TERM_COLOR da = terrain.d_attr[lighting_level];
-                byte dc = terrain.d_char[lighting_level];
-                TERM_COLOR ca = terrain.x_attr[lighting_level];
-                byte cc = terrain.x_char[lighting_level];
-
+                const auto &cc_def = terrain.cc_defs[lighting_level];
+                const auto &cc_config = terrain.cc_configs[lighting_level];
                 prt("", 17, 5);
                 term_putstr(5, 17, -1, TERM_WHITE,
                     format(_("地形 = %d, 名前 = %s, 明度 = %s", "Terrain = %d, Name = %s, Lighting = %s"), terrain_id, (terrain.name.data()),
                         lighting_level_str[lighting_level]));
-                term_putstr(10, 19, -1, TERM_WHITE, format(_("初期値  色 / 文字 = %3d / %3d", "Default attr/char = %3d / %3d"), da, dc));
+                term_putstr(10, 19, -1, TERM_WHITE, format(_("初期値  色 / 文字 = %3d / %3d", "Default attr/char = %3d / %3d"), cc_def.color, cc_def.character));
                 term_putstr(40, 19, -1, TERM_WHITE, empty_symbol);
-                term_queue_bigchar(43, 19, da, dc, 0, 0);
-                term_putstr(10, 20, -1, TERM_WHITE, format(_("現在値  色 / 文字 = %3d / %3d", "Current attr/char = %3d / %3d"), ca, cc));
+                term_queue_bigchar(43, 19, cc_def.color, cc_def.character, 0, 0);
+                term_putstr(10, 20, -1, TERM_WHITE, format(_("現在値  色 / 文字 = %3d / %3d", "Current attr/char = %3d / %3d"), cc_config.color, cc_config.character));
                 term_putstr(40, 20, -1, TERM_WHITE, empty_symbol);
-                term_queue_bigchar(43, 20, ca, cc, 0, 0);
+                term_queue_bigchar(43, 20, cc_config.color, cc_config.character, 0, 0);
                 term_putstr(0, 22, -1, TERM_WHITE,
                     _("コマンド (n/N/^N/a/A/^A/c/C/^C/l/L/^L/d/D/^D/v/V/^V): ", "Command (n/N/^N/a/A/^A/c/C/^C/l/L/^L/d/D/^D/v/V/^V): "));
 
@@ -424,22 +425,24 @@ void do_cmd_visuals(PlayerType *player_ptr)
                     break;
                 }
                 case 'a': {
-                    const auto visual_id = input_new_visual_id(ch, terrain.x_attr[lighting_level], 256);
+                    auto &color_config = terrain.cc_configs[lighting_level].color;
+                    const auto visual_id = input_new_visual_id(ch, color_config, 256);
                     if (!visual_id) {
                         break;
                     }
 
-                    terrain.x_attr[lighting_level] = *visual_id;
+                    color_config = *visual_id;
                     need_redraw = true;
                     break;
                 }
                 case 'c': {
-                    const auto visual_id = input_new_visual_id(ch, terrain.x_char[lighting_level], 256);
+                    auto &character_config = terrain.cc_configs[lighting_level].character;
+                    const auto visual_id = input_new_visual_id(ch, character_config, 256);
                     if (!visual_id) {
                         break;
                     }
 
-                    terrain.x_char[lighting_level] = *visual_id;
+                    character_config = *visual_id;
                     need_redraw = true;
                     break;
                 }
@@ -453,7 +456,7 @@ void do_cmd_visuals(PlayerType *player_ptr)
                     break;
                 }
                 case 'd':
-                    apply_default_feat_lighting(terrain.x_attr, terrain.x_char);
+                    terrain.reset_lighting();
                     need_redraw = true;
                     break;
                 case 'v':
