@@ -47,7 +47,7 @@ ColoredChar image_object()
 {
     if (use_graphics) {
         const auto &baseitems = BaseitemList::get_instance();
-        const auto &baseitem = baseitems_info[randint1(baseitems.size() - 1)];
+        const auto &baseitem = *(baseitems.begin() + randint1(baseitems.size() - 1));
         return baseitem.cc_config;
     }
 
