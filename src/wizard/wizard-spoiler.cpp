@@ -17,7 +17,6 @@
 #include "io/input-key-acceptor.h"
 #include "main/sound-of-music.h"
 #include "monster-race/monster-race.h"
-#include "object/object-kind-hook.h"
 #include "player-info/class-info.h"
 #include "realm/realm-names-table.h"
 #include "spell/spells-execution.h"
@@ -98,7 +97,7 @@ static auto get_mon_evol_roots()
  */
 static SpoilerOutputResultType spoil_mon_evol()
 {
-    const auto &path = path_build(ANGBAND_DIR_USER, "mon-evol.txt");
+    const auto path = path_build(ANGBAND_DIR_USER, "mon-evol.txt");
     spoiler_file = angband_fopen(path, FileOpenMode::WRITE);
     if (!spoiler_file) {
         return SpoilerOutputResultType::FILE_OPEN_FAILED;
@@ -175,7 +174,7 @@ static SpoilerOutputResultType spoil_categorized_mon_desc()
 
 static SpoilerOutputResultType spoil_player_spell()
 {
-    const auto &path = path_build(ANGBAND_DIR_USER, "spells.txt");
+    const auto path = path_build(ANGBAND_DIR_USER, "spells.txt");
     spoiler_file = angband_fopen(path, FileOpenMode::WRITE);
     if (!spoiler_file) {
         return SpoilerOutputResultType::FILE_OPEN_FAILED;
@@ -186,6 +185,7 @@ static SpoilerOutputResultType spoil_player_spell()
 
     PlayerType dummy_p;
     dummy_p.lev = 1;
+    const auto &baseitems = BaseitemList::get_instance();
     for (auto c = 0; c < PLAYER_CLASS_TYPE_MAX; c++) {
         auto class_ptr = &class_info[c];
         spoil_out(format("[[Class: %s]]\n", class_ptr->title));
@@ -195,7 +195,7 @@ static SpoilerOutputResultType spoil_player_spell()
         if (magic_ptr->spell_book != ItemKindType::NONE) {
             ItemEntity book;
             auto o_ptr = &book;
-            o_ptr->prep(lookup_baseitem_id({ magic_ptr->spell_book, 0 }));
+            o_ptr->prep(baseitems.lookup_baseitem_id({ magic_ptr->spell_book, 0 }));
             book_name = describe_flavor(&dummy_p, o_ptr, OD_NAME_ONLY);
             auto *s = angband_strchr(book_name.data(), '[');
             if (s != nullptr) {

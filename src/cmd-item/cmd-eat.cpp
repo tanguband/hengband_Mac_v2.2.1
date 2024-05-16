@@ -20,7 +20,6 @@
 #include "object/item-tester-hooker.h"
 #include "object/item-use-flags.h"
 #include "object/object-info.h"
-#include "object/object-kind-hook.h"
 #include "perception/object-perception.h"
 #include "player-base/player-class.h"
 #include "player-base/player-race.h"
@@ -183,9 +182,7 @@ static bool exe_eat_charge_of_magic_device(PlayerType *player_ptr, ItemEntity *o
 
     /* XXX Hack -- unstack if necessary */
     if (is_staff && (i_idx >= 0) && (o_ptr->number > 1)) {
-        auto item = *o_ptr;
-
-        /* Modify quantity */
+        ItemEntity item = *o_ptr;
         item.number = 1;
 
         /* Restore the charges */
@@ -305,7 +302,7 @@ void exe_eat_food(PlayerType *player_ptr, INVENTORY_IDX i_idx)
             auto *q_ptr = &forge;
 
             msg_print(_("食べ物がアゴを素通りして落ちた！", "The food falls through your jaws!"));
-            q_ptr->prep(lookup_baseitem_id(bi_key));
+            q_ptr->prep(BaseitemList::get_instance().lookup_baseitem_id(bi_key));
 
             /* Drop the object from heaven */
             (void)drop_near(player_ptr, q_ptr, -1, player_ptr->y, player_ptr->x);

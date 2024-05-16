@@ -15,7 +15,6 @@
 #include "locale/english.h"
 #include "monster-race/monster-race.h"
 #include "object-enchant/special-object-flags.h"
-#include "object/object-kind-hook.h"
 #include "system/artifact-type-definition.h"
 #include "system/baseitem-info.h"
 #include "system/dungeon-info.h"
@@ -51,6 +50,7 @@ void do_cmd_checkquest(PlayerType *player_ptr)
 static void do_cmd_knowledge_quests_current(PlayerType *player_ptr, FILE *fff)
 {
     const auto &quest_list = QuestList::get_instance();
+    const auto &baseitems = BaseitemList::get_instance();
     std::string rand_tmp_str;
     int rand_level = 100;
     int total = 0;
@@ -106,7 +106,7 @@ static void do_cmd_knowledge_quests_current(PlayerType *player_ptr, FILE *fff)
                     if (quest.has_reward()) {
                         const auto &artifact = quest.get_reward();
                         ItemEntity item;
-                        auto bi_id = lookup_baseitem_id(artifact.bi_key);
+                        const auto bi_id = baseitems.lookup_baseitem_id(artifact.bi_key);
                         item.prep(bi_id);
                         item.fixed_artifact_idx = quest.reward_artifact_idx;
                         item.ident = IDENT_STORE;
@@ -318,7 +318,8 @@ void do_cmd_knowledge_quests(PlayerType *player_ptr)
     for (const auto &[q_idx, quest] : quest_list) {
         quest_numbers.push_back(q_idx);
     }
-    int dummy;
+
+    auto dummy = 0;
     ang_sort(player_ptr, quest_numbers.data(), &dummy, quest_numbers.size(), ang_sort_comp_quest_num, ang_sort_swap_quest_num);
 
     do_cmd_knowledge_quests_current(player_ptr, fff);

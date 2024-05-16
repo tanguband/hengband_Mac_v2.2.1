@@ -65,7 +65,6 @@
 #include "io/input-key-requester.h"
 #include "main/sound-definitions-table.h"
 #include "main/sound-of-music.h"
-#include "object/object-kind-hook.h"
 #include "player-base/player-class.h"
 #include "player-info/class-info.h"
 #include "player-info/magic-eater-data-type.h"
@@ -113,8 +112,7 @@ static std::optional<BaseitemKey> check_magic_eater_spell_repeat(magic_eater_dat
     switch (tval) {
     case ItemKindType::ROD: {
         const auto &baseitems = BaseitemList::get_instance();
-        const auto bi_id = lookup_baseitem_id({ ItemKindType::ROD, sval });
-        const auto &baseitem = baseitems.get_baseitem(bi_id);
+        const auto &baseitem = baseitems.lookup_baseitem({ ItemKindType::ROD, sval });
         if (item.charge <= baseitem.pval * (item.count - 1) * EATER_ROD_CHARGE) {
             return BaseitemKey(tval, sval);
         }
@@ -263,7 +261,6 @@ static std::optional<BaseitemKey> select_magic_eater(PlayerType *player_ptr, boo
         if (request_list || use_menu) {
             byte y, x = 0;
             PERCENTAGE chance;
-            short bi_id;
             POSITION x1, y1;
             DEPTH level;
             byte col;
@@ -292,8 +289,6 @@ static std::optional<BaseitemKey> select_magic_eater(PlayerType *player_ptr, boo
                     continue;
                 }
 
-                bi_id = lookup_baseitem_id({ tval, sval_ctr });
-
                 std::string dummy;
                 if (use_menu) {
                     if (sval_ctr == (menu_line - 1)) {
@@ -314,7 +309,7 @@ static std::optional<BaseitemKey> select_magic_eater(PlayerType *player_ptr, boo
                 }
                 x1 = ((sval_ctr < item_group_size / 2) ? x : x + 40);
                 y1 = ((sval_ctr < item_group_size / 2) ? y + sval_ctr : y + sval_ctr - item_group_size / 2);
-                const auto &baseitem = baseitems.get_baseitem(bi_id);
+                const auto &baseitem = baseitems.lookup_baseitem({ tval, sval_ctr });
                 level = (tval == ItemKindType::ROD ? baseitem.level * 5 / 6 - 5 : baseitem.level);
                 chance = level * 4 / 5 + 20;
                 chance -= 3 * (adj_mag_stat[player_ptr->stat_index[mp_ptr->spell_stat]] - 1);
@@ -476,8 +471,7 @@ static std::optional<BaseitemKey> select_magic_eater(PlayerType *player_ptr, boo
         if (!only_browse) {
             auto &item = item_group[sval];
             if (tval == ItemKindType::ROD) {
-                const auto bi_id = lookup_baseitem_id({ tval, sval });
-                const auto &baseitem = baseitems.get_baseitem(bi_id);
+                const auto &baseitem = baseitems.lookup_baseitem({ tval, sval });
                 if (item.charge > baseitem.pval * (item.count - 1) * EATER_ROD_CHARGE) {
                     msg_print(_("その魔法はまだ充填している最中だ。", "The magic is still charging."));
                     msg_print(nullptr);
@@ -499,8 +493,7 @@ static std::optional<BaseitemKey> select_magic_eater(PlayerType *player_ptr, boo
             term_erase(7, 22);
             term_erase(7, 21);
             term_erase(7, 20);
-            const auto bi_id = lookup_baseitem_id({ tval, sval });
-            const auto &baseitem = baseitems.get_baseitem(bi_id);
+            const auto &baseitem = baseitems.lookup_baseitem({ tval, sval });
             display_wrap_around(baseitem.text, 62, 21, 10);
             continue;
         }
@@ -549,17 +542,16 @@ bool do_cmd_magic_eater(PlayerType *player_ptr, bool only_browse, bool powerful)
         return false;
     }
 
-    auto result = select_magic_eater(player_ptr, only_browse);
+    const auto bi_key = select_magic_eater(player_ptr, only_browse);
     PlayerEnergy energy(player_ptr);
-    if (!result) {
+    if (!bi_key) {
         energy.reset_player_turn();
         return false;
     }
-    auto &bi_key = *result;
 
-    const auto bi_id = lookup_baseitem_id(bi_key);
-    const auto &baseitem = BaseitemList::get_instance().get_baseitem(bi_id);
-    auto level = (bi_key.tval() == ItemKindType::ROD ? baseitem.level * 5 / 6 - 5 : baseitem.level);
+    const auto &baseitems = BaseitemList::get_instance();
+    const auto &baseitem = baseitems.lookup_baseitem(*bi_key);
+    auto level = (bi_key->tval() == ItemKindType::ROD ? baseitem.level * 5 / 6 - 5 : baseitem.level);
     auto chance = level * 4 / 5 + 20;
     chance -= 3 * (adj_mag_stat[player_ptr->stat_index[mp_ptr->spell_stat]] - 1);
     level /= 2;
@@ -592,14 +584,14 @@ bool do_cmd_magic_eater(PlayerType *player_ptr, bool only_browse, bool powerful)
     } else {
         DIRECTION dir = 0;
 
-        switch (bi_key.tval()) {
+        switch (bi_key->tval()) {
         case ItemKindType::ROD: {
-            const auto sval = bi_key.sval();
+            const auto sval = bi_key->sval();
             if (!sval) {
                 return false;
             }
 
-            if (bi_key.is_aiming_rod() && !get_aim_dir(player_ptr, &dir)) {
+            if (bi_key->is_aiming_rod() && !get_aim_dir(player_ptr, &dir)) {
                 return false;
             }
 
@@ -611,7 +603,7 @@ bool do_cmd_magic_eater(PlayerType *player_ptr, bool only_browse, bool powerful)
             break;
         }
         case ItemKindType::WAND: {
-            const auto sval = bi_key.sval();
+            const auto sval = bi_key->sval();
             if (!sval) {
                 return false;
             }
@@ -624,7 +616,7 @@ bool do_cmd_magic_eater(PlayerType *player_ptr, bool only_browse, bool powerful)
             break;
         }
         default:
-            const auto sval = bi_key.sval();
+            const auto sval = bi_key->sval();
             if (!sval) {
                 return false;
             }
@@ -643,12 +635,12 @@ bool do_cmd_magic_eater(PlayerType *player_ptr, bool only_browse, bool powerful)
     }
 
     auto magic_eater_data = PlayerClass(player_ptr).get_specific_data<magic_eater_data_type>();
-    const auto sval = bi_key.sval();
+    const auto sval = bi_key->sval();
     if (!sval) {
         return false;
     }
 
-    const auto tval = bi_key.tval();
+    const auto tval = bi_key->tval();
     auto &item = magic_eater_data->get_item_group(tval)[*sval];
 
     energy.set_player_turn_energy(100);
