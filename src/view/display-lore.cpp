@@ -23,6 +23,7 @@
 #include "term/z-form.h"
 #include "util/bit-flags-calculator.h"
 #include "util/string-processor.h"
+#include "view/colored-char.h"
 #include "view/display-messages.h"
 #include "world/world.h"
 
@@ -38,19 +39,17 @@
  */
 void roff_top(MonsterRaceId r_idx)
 {
-    auto *r_ptr = &monraces_info[r_idx];
-    char c1 = r_ptr->d_char;
-    char c2 = r_ptr->x_char;
-
-    TERM_COLOR a1 = r_ptr->d_attr;
-    TERM_COLOR a2 = r_ptr->x_attr;
+    const auto &monrace = monraces_info[r_idx];
+    const auto &cc_def = monrace.cc_def;
+    TERM_COLOR a2 = monrace.x_attr;
+    char c2 = monrace.x_char;
 
     term_erase(0, 0);
     term_gotoxy(0, 0);
 
 #ifdef JP
 #else
-    if (r_ptr->kind_flags.has_not(MonsterKindType::UNIQUE)) {
+    if (monrace.kind_flags.has_not(MonsterKindType::UNIQUE)) {
         term_addstr(-1, TERM_WHITE, "The ");
     }
 #endif
@@ -61,14 +60,14 @@ void roff_top(MonsterRaceId r_idx)
         term_addstr(-1, TERM_WHITE, "] ");
     }
 
-    term_addstr(-1, TERM_WHITE, r_ptr->name);
+    term_addstr(-1, TERM_WHITE, monrace.name);
 
     term_addstr(-1, TERM_WHITE, " ('");
-    term_add_bigch(a1, c1);
+    term_add_bigch(cc_def);
     term_addstr(-1, TERM_WHITE, "')");
 
     term_addstr(-1, TERM_WHITE, "/('");
-    term_add_bigch(a2, c2);
+    term_add_bigch({ a2, c2 });
     term_addstr(-1, TERM_WHITE, "'):");
 }
 
@@ -537,7 +536,7 @@ static void display_monster_escort_contents(lore_type *lore_ptr)
     auto idx = 0 * max_idx;
 #endif
 
-    for (auto [r_idx, dd, ds] : lore_ptr->r_ptr->reinforces) {
+    for (const auto &[r_idx, dd, ds] : lore_ptr->r_ptr->reinforces) {
         auto is_reinforced = MonsterRace(r_idx).is_valid();
 #ifndef JP
         const char *prefix = (idx == 0) ? " " : (idx == max_idx) ? " and "
@@ -601,32 +600,9 @@ void display_monster_launching(PlayerType *player_ptr, lore_type *lore_ptr)
         return;
     }
 
-    int p = -1; /* Position of SHOOT */
-    int n = 0; /* Number of blows */
-    const int max_blows = 4;
-    for (int m = 0; m < max_blows; m++) {
-        if (lore_ptr->r_ptr->blows[m].method != RaceBlowMethodType::NONE) {
-            n++;
-        } /* Count blows */
-
-        if (lore_ptr->r_ptr->blows[m].method == RaceBlowMethodType::SHOOT) {
-            p = m; /* Remember position */
-            break;
-        }
-    }
-
-    /* When full blows, use a first damage */
-    if (n == max_blows) {
-        p = 0;
-    }
-
-    if (p < 0) {
-        return;
-    }
-
     if (know_armour(lore_ptr->r_idx, lore_ptr->know_everything)) {
-        strnfmt(lore_ptr->tmp_msg[lore_ptr->vn], sizeof(lore_ptr->tmp_msg[lore_ptr->vn]), _("威力 %dd%d の射撃をする", "fire an arrow (Power:%dd%d)"), lore_ptr->r_ptr->blows[p].d_dice,
-            lore_ptr->r_ptr->blows[p].d_side);
+        strnfmt(lore_ptr->tmp_msg[lore_ptr->vn], sizeof(lore_ptr->tmp_msg[lore_ptr->vn]), _("威力 %dd%d の射撃をする", "fire an arrow (Power:%dd%d)"), lore_ptr->r_ptr->shoot_dam_dice,
+            lore_ptr->r_ptr->shoot_dam_side);
     } else {
         angband_strcpy(lore_ptr->tmp_msg[lore_ptr->vn], _("射撃をする", "fire an arrow"), sizeof(lore_ptr->tmp_msg[lore_ptr->vn]));
     }
