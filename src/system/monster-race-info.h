@@ -143,6 +143,7 @@ public:
     bool has_living_flag() const;
     bool is_explodable() const;
     std::string get_died_message() const;
+    std::optional<bool> order_pet(const MonsterRaceInfo &other) const;
     void kill_unique();
     std::string get_pronoun_of_summoned_kin() const;
 };
@@ -178,6 +179,7 @@ public:
     int calc_figurine_value(const MonsterRaceId r_idx) const;
     int calc_capture_value(const MonsterRaceId r_idx) const;
     bool order(MonsterRaceId id1, MonsterRaceId id2, bool is_detailed = false) const;
+    bool order_level(MonsterRaceId id1, MonsterRaceId id2) const;
 
     void reset_all_visuals();
 

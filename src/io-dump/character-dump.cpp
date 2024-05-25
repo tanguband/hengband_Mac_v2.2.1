@@ -43,7 +43,6 @@
 #include "util/buffer-shaper.h"
 #include "util/enum-converter.h"
 #include "util/int-char-converter.h"
-#include "util/sort.h"
 #include "util/string-processor.h"
 #include "view/display-messages.h"
 #include "world/world.h"
@@ -117,18 +116,12 @@ static void dump_aux_quest(PlayerType *player_ptr, FILE *fff)
 {
     fprintf(fff, _("\n\n  [クエスト情報]\n", "\n\n  [Quest Information]\n"));
 
-    const auto &quest_list = QuestList::get_instance();
-    std::vector<QuestId> quest_numbers;
-    for (const auto &[q_idx, quest] : quest_list) {
-        quest_numbers.push_back(q_idx);
-    }
-
-    auto dummy = 0;
-    ang_sort(player_ptr, quest_numbers.data(), &dummy, quest_numbers.size(), ang_sort_comp_quest_num, ang_sort_swap_quest_num);
+    const auto &quests = QuestList::get_instance();
+    const auto quest_ids = quests.get_sorted_quest_ids();
     fputc('\n', fff);
-    do_cmd_knowledge_quests_completed(player_ptr, fff, quest_numbers);
+    do_cmd_knowledge_quests_completed(player_ptr, fff, quest_ids);
     fputc('\n', fff);
-    do_cmd_knowledge_quests_failed(player_ptr, fff, quest_numbers);
+    do_cmd_knowledge_quests_failed(player_ptr, fff, quest_ids);
     fputc('\n', fff);
 }
 

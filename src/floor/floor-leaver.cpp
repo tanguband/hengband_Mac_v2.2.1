@@ -43,7 +43,7 @@ static void check_riding_preservation(PlayerType *player_ptr)
     }
 
     auto *m_ptr = &player_ptr->current_floor_ptr->m_list[player_ptr->riding];
-    if (m_ptr->parent_m_idx) {
+    if (m_ptr->has_parent()) {
         player_ptr->riding = 0;
         player_ptr->pet_extra_flags &= ~(PF_TWO_HANDS);
         player_ptr->riding_ryoute = player_ptr->old_riding_ryoute = false;
@@ -60,7 +60,7 @@ static bool check_pet_preservation_conditions(PlayerType *player_ptr, MonsterEnt
     }
 
     auto dis = distance(player_ptr->y, player_ptr->x, m_ptr->fy, m_ptr->fx);
-    if (m_ptr->is_confused() || m_ptr->is_stunned() || m_ptr->is_asleep() || (m_ptr->parent_m_idx != 0)) {
+    if (m_ptr->is_confused() || m_ptr->is_stunned() || m_ptr->is_asleep() || m_ptr->has_parent()) {
         return true;
     }
 
@@ -126,7 +126,7 @@ static void preserve_pet(PlayerType *player_ptr)
     for (MONSTER_IDX i = player_ptr->current_floor_ptr->m_max - 1; i >= 1; i--) {
         auto *m_ptr = &player_ptr->current_floor_ptr->m_list[i];
         const auto parent_r_idx = player_ptr->current_floor_ptr->m_list[m_ptr->parent_m_idx].r_idx;
-        if ((m_ptr->parent_m_idx == 0) || MonsterRace(parent_r_idx).is_valid()) {
+        if (!m_ptr->has_parent() || MonsterRace(parent_r_idx).is_valid()) {
             continue;
         }
 
@@ -252,23 +252,23 @@ static void get_out_monster(PlayerType *player_ptr)
  */
 static void preserve_info(PlayerType *player_ptr)
 {
-    auto quest_r_idx = MonsterRace::empty_id();
-    const auto &quest_list = QuestList::get_instance();
+    auto quest_monrace_id = MonsterRace::empty_id();
+    const auto &quests = QuestList::get_instance();
     const auto &floor = *player_ptr->current_floor_ptr;
-    for (const auto &[q_idx, quest] : quest_list) {
+    for (const auto &[quest_id, quest] : quests) {
         auto quest_relating_monster = (quest.status == QuestStatusType::TAKEN);
         quest_relating_monster &= ((quest.type == QuestKindType::KILL_LEVEL) || (quest.type == QuestKindType::RANDOM));
         quest_relating_monster &= (quest.level == floor.dun_level);
         quest_relating_monster &= (floor.dungeon_idx == quest.dungeon);
         quest_relating_monster &= !(quest.flags & QUEST_FLAG_PRESET);
         if (quest_relating_monster) {
-            quest_r_idx = quest.r_idx;
+            quest_monrace_id = quest.r_idx;
         }
     }
 
     for (DUNGEON_IDX i = 1; i < floor.m_max; i++) {
         auto *m_ptr = &floor.m_list[i];
-        if (!m_ptr->is_valid() || (quest_r_idx != m_ptr->r_idx)) {
+        if (!m_ptr->is_valid() || (quest_monrace_id != m_ptr->r_idx)) {
             continue;
         }
 

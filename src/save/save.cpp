@@ -128,15 +128,15 @@ static bool wr_savefile_new(PlayerType *player_ptr)
     tmp16u = static_cast<uint16_t>(towns_info.size());
     wr_u16b(tmp16u);
 
-    const auto &quest_list = QuestList::get_instance();
-    tmp16u = static_cast<uint16_t>(quest_list.size());
+    const auto &quests = QuestList::get_instance();
+    tmp16u = static_cast<uint16_t>(quests.size());
     wr_u16b(tmp16u);
 
     tmp8u = MAX_RANDOM_QUEST - MIN_RANDOM_QUEST;
     wr_byte(tmp8u);
 
-    for (const auto &[q_idx, quest] : quest_list) {
-        wr_s16b(enum2i(q_idx));
+    for (const auto &[quest_id, quest] : quests) {
+        wr_s16b(enum2i(quest_id));
         wr_s16b(enum2i(quest.status));
         wr_s16b((int16_t)quest.level);
         wr_byte((byte)quest.complev);
@@ -144,7 +144,7 @@ static bool wr_savefile_new(PlayerType *player_ptr)
 
         auto is_quest_running = quest.status == QuestStatusType::TAKEN;
         is_quest_running |= quest.status == QuestStatusType::COMPLETED;
-        is_quest_running |= !QuestType::is_fixed(q_idx);
+        is_quest_running |= !QuestType::is_fixed(quest_id);
         if (!is_quest_running) {
             continue;
         }
@@ -205,13 +205,13 @@ static bool wr_savefile_new(PlayerType *player_ptr)
     }
 
     for (int i = 0; i < INVEN_TOTAL; i++) {
-        auto *o_ptr = &player_ptr->inventory_list[i];
-        if (!o_ptr->is_valid()) {
+        const auto &item = player_ptr->inventory_list[i];
+        if (!item.is_valid()) {
             continue;
         }
 
         wr_u16b((uint16_t)i);
-        wr_item(o_ptr);
+        wr_item(item);
     }
 
     wr_u16b(0xFFFF);
