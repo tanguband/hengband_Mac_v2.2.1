@@ -61,6 +61,7 @@
 #include "util/point-2d.h"
 #include "view/display-map.h"
 #include "view/display-messages.h"
+#include "view/display-symbol.h"
 #include "window/main-window-util.h"
 #include "world/world.h"
 #include <queue>
@@ -265,21 +266,19 @@ bool no_lite(PlayerType *player_ptr)
 /*
  * Place an attr/char pair at the given map coordinate, if legal.
  */
-void print_rel(PlayerType *player_ptr, char c, TERM_COLOR a, POSITION y, POSITION x)
+void print_rel(PlayerType *player_ptr, const DisplaySymbol &symbol, POSITION y, POSITION x)
 {
     /* Only do "legal" locations */
     if (panel_contains(y, x)) {
-        a = get_monochrome_display_color(player_ptr).value_or(a);
-
-        /* Draw the char using the attr */
-        term_queue_bigchar(panel_col_of(x), y - panel_row_prt, { { a, c }, {} });
+        const auto color = get_monochrome_display_color(player_ptr).value_or(symbol.color);
+        term_queue_bigchar(panel_col_of(x), y - panel_row_prt, { { color, symbol.character }, {} });
     }
 }
 
 void print_bolt_pict(PlayerType *player_ptr, POSITION y, POSITION x, POSITION ny, POSITION nx, AttributeType typ)
 {
-    const auto &[a, c] = bolt_pict(y, x, ny, nx, typ);
-    print_rel(player_ptr, c, a, ny, nx);
+    const auto symbol = bolt_pict(y, x, ny, nx, typ);
+    print_rel(player_ptr, symbol, ny, nx);
 }
 
 /*!
@@ -406,10 +405,10 @@ void note_spot(PlayerType *player_ptr, POSITION y, POSITION x)
 void lite_spot(PlayerType *player_ptr, POSITION y, POSITION x)
 {
     if (panel_contains(y, x) && in_bounds2(player_ptr->current_floor_ptr, y, x)) {
-        auto ccp = map_info(player_ptr, { y, x });
-        ccp.cc_foreground.color = get_monochrome_display_color(player_ptr).value_or(ccp.cc_foreground.color);
+        auto symbol_pair = map_info(player_ptr, { y, x });
+        symbol_pair.symbol_foreground.color = get_monochrome_display_color(player_ptr).value_or(symbol_pair.symbol_foreground.color);
 
-        term_queue_bigchar(panel_col_of(x), y - panel_row_prt, ccp);
+        term_queue_bigchar(panel_col_of(x), y - panel_row_prt, symbol_pair);
         static constexpr auto flags = {
             SubWindowRedrawingFlag::OVERHEAD,
             SubWindowRedrawingFlag::DUNGEON,

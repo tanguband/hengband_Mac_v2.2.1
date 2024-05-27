@@ -146,7 +146,7 @@ static void print_monster_line(TERM_LEN x, TERM_LEN y, MonsterEntity *m_ptr, int
 
     term_addstr(-1, TERM_WHITE, buf);
     term_addstr(-1, TERM_WHITE, " ");
-    term_add_bigch(monrace.cc_config);
+    term_add_bigch(monrace.symbol_config);
 
     if (monrace.r_tkills && m_ptr->mflag2.has_not(MonsterConstantFlagType::KAGE)) {
         buf = format(" %2d", monrace.level);
@@ -232,7 +232,7 @@ static void print_pet_list_oneline(PlayerType *player_ptr, const MonsterEntity &
     }
 
     term_gotoxy(x + 13, y);
-    term_add_bigch(monrace.cc_config);
+    term_add_bigch(monrace.symbol_config);
     term_addstr(-1, TERM_WHITE, " ");
     term_addstr(-1, TERM_WHITE, name);
 
@@ -345,9 +345,7 @@ static void display_equipment(PlayerType *player_ptr, const ItemTester &item_tes
         }
 
         if (show_item_graph) {
-            const auto a = o_ptr->get_color();
-            const auto c = o_ptr->get_symbol();
-            term_queue_bigchar(cur_col, cur_row, { { a, c }, {} });
+            term_queue_bigchar(cur_col, cur_row, { o_ptr->get_symbol(), {} });
             if (use_bigtile) {
                 cur_col++;
             }
@@ -468,15 +466,15 @@ static void display_dungeon(PlayerType *player_ptr)
             const auto pos_x = x - player_ptr->x + game_term->wid / 2 - 1;
             if (!in_bounds2(player_ptr->current_floor_ptr, y, x)) {
                 const auto &terrain = TerrainList::get_instance()[feat_none];
-                const auto &cc_foreground = terrain.cc_configs.at(F_LIT_STANDARD);
-                term_queue_char(pos_x, pos_y, { cc_foreground, {} });
+                const auto &symbol_foreground = terrain.symbol_configs.at(F_LIT_STANDARD);
+                term_queue_char(pos_x, pos_y, { symbol_foreground, {} });
                 continue;
             }
 
-            auto ccp = map_info(player_ptr, { y, x });
-            ccp.cc_foreground.color = get_monochrome_display_color(player_ptr).value_or(ccp.cc_foreground.color);
+            auto symbol_pair = map_info(player_ptr, { y, x });
+            symbol_pair.symbol_foreground.color = get_monochrome_display_color(player_ptr).value_or(symbol_pair.symbol_foreground.color);
 
-            term_queue_char(pos_x, pos_y, ccp);
+            term_queue_char(pos_x, pos_y, symbol_pair);
         }
     }
 }
@@ -683,10 +681,9 @@ static void display_found_item_list(PlayerType *player_ptr)
         term_gotoxy(0, term_y);
 
         // アイテムシンボル表示
-        const auto symbol_code = item->get_symbol();
-        const auto symbol = format(" %c ", symbol_code);
-        const auto color_code_for_symbol = item->get_color();
-        term_addstr(-1, color_code_for_symbol, symbol);
+        const auto symbol = item->get_symbol();
+        const auto symbol_str = format(" %c ", symbol.character);
+        term_addstr(-1, symbol.color, symbol_str);
 
         const auto item_name = describe_flavor(player_ptr, item, 0);
         const auto color_code_for_item = tval_to_attr[enum2i(item->bi_key.tval()) % 128];
