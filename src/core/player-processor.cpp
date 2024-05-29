@@ -55,12 +55,6 @@
 #include "system/player-type-definition.h"
 #include "system/redrawing-flags-updater.h"
 #include "term/screen-processor.h"
-#include "timed-effect/player-blindness.h"
-#include "timed-effect/player-confusion.h"
-#include "timed-effect/player-cut.h"
-#include "timed-effect/player-hallucination.h"
-#include "timed-effect/player-paralysis.h"
-#include "timed-effect/player-stun.h"
 #include "timed-effect/timed-effects.h"
 #include "util/bit-flags-calculator.h"
 #include "view/display-messages.h"
@@ -180,7 +174,7 @@ void process_player(PlayerType *player_ptr)
     }
 
     const auto effects = player_ptr->effects();
-    if (player_ptr->riding && !effects->confusion()->is_confused() && !effects->blindness()->is_blind()) {
+    if (player_ptr->riding && !effects->confusion().is_confused() && !effects->blindness().is_blind()) {
         auto *m_ptr = &player_ptr->current_floor_ptr->m_list[player_ptr->riding];
         auto *r_ptr = &m_ptr->get_monrace();
         if (m_ptr->is_asleep()) {
@@ -276,8 +270,8 @@ void process_player(PlayerType *player_ptr)
 
         PlayerEnergy energy(player_ptr);
         energy.reset_player_turn();
-        auto is_knocked_out = effects->stun()->is_knocked_out();
-        auto is_paralyzed = effects->paralysis()->is_paralyzed();
+        const auto is_knocked_out = effects->stun().is_knocked_out();
+        const auto is_paralyzed = effects->paralysis().is_paralyzed();
         if (system.is_phase_out()) {
             move_cursor_relative(player_ptr->y, player_ptr->x);
             command_cmd = SPECIAL_KEY_BUILDING;
@@ -332,7 +326,7 @@ void process_player(PlayerType *player_ptr)
                 player_ptr->energy_need += (int16_t)((int32_t)player_ptr->energy_use * ENERGY_NEED() / 100L);
             }
 
-            if (effects->hallucination()->is_hallucinated()) {
+            if (effects->hallucination().is_hallucinated()) {
                 rfu.set_flag(MainWindowRedrawingFlag::MAP);
             }
 
