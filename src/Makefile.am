@@ -372,6 +372,7 @@ hengband_SOURCES = \
 	load/old/monster-flag-types-savefile50.h \
 	load/old/monster-loader-savefile50.cpp load/old/monster-loader-savefile50.h \
 	\
+	locale/character-encoding.h \
 	locale/english.cpp locale/english.h \
 	locale/japanese.cpp locale/japanese.h \
 	locale/utf-8.cpp locale/utf-8.h \
@@ -510,7 +511,6 @@ hengband_SOURCES = \
 	\
 	monster-race/monster-aura-types.h \
 	monster-race/monster-kind-mask.cpp monster-race/monster-kind-mask.h \
-	monster-race/monster-race.cpp monster-race/monster-race.h \
 	monster-race/monster-race-hook.cpp monster-race/monster-race-hook.h \
 	monster-race/race-ability-flags.h \
 	monster-race/race-ability-mask.cpp monster-race/race-ability-mask.h \
@@ -928,6 +928,7 @@ hengband_SOURCES = \
 	system/game-option-types.h \
 	system/h-basic.h system/h-config.h \
 	system/h-system.h system/h-type.h \
+	system/inner-game-data.cpp system/inner-game-data.h \
 	system/item-entity.cpp system/item-entity.h \
 	system/monster-entity.cpp system/monster-entity.h \
 	system/monster-race-info.cpp system/monster-race-info.h \

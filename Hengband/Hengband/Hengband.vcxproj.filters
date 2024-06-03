@@ -1013,9 +1013,6 @@
     <ClCompile Include="..\..\src\object-enchant\activation-info-table.cpp">
       <Filter>object-enchant</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\monster-race\monster-race.cpp">
-      <Filter>monster-race</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\monster-race\monster-race-hook.cpp">
       <Filter>monster-race</Filter>
     </ClCompile>
@@ -2502,6 +2499,9 @@
     <ClCompile Include="..\..\src\room\rooms-nest.cpp">
       <Filter>room</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\system\inner-game-data.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\combat\shoot.h">
@@ -3659,9 +3659,6 @@
     <ClInclude Include="..\..\src\monster-race\race-indice-types.h">
       <Filter>monster-race</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\monster-race\monster-race.h">
-      <Filter>monster-race</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\monster-race\monster-race-hook.h">
       <Filter>monster-race</Filter>
     </ClInclude>
@@ -3919,6 +3916,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\util\buffer-shaper.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\locale\character-encoding.h">
+      <Filter>locale</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\locale\language-switcher.h">
       <Filter>locale</Filter>
@@ -5414,6 +5414,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\room\rooms-nest.h">
       <Filter>room</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\system\inner-game-data.h">
+      <Filter>system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

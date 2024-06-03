@@ -32,7 +32,6 @@
 #include "monster-floor/monster-lite.h"
 #include "monster-floor/monster-remover.h"
 #include "monster-race/monster-race-hook.h"
-#include "monster-race/monster-race.h"
 #include "monster/monster-update.h"
 #include "monster/smart-learn-types.h"
 #include "mutation/mutation-calculator.h"
@@ -2928,7 +2927,7 @@ void check_experience(PlayerType *player_ptr)
             }
             level_inc_stat = true;
 
-            exe_write_diary(player_ptr, DiaryKind::LEVELUP, player_ptr->lev);
+            exe_write_diary(*player_ptr->current_floor_ptr, DiaryKind::LEVELUP, player_ptr->lev);
         }
 
         sound(SOUND_LEVEL);

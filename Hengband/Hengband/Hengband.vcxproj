@@ -319,6 +319,7 @@
     <ClCompile Include="..\..\src\specific-object\stone-of-lore.cpp" />
     <ClCompile Include="..\..\src\spell-class\spells-mirror-master.cpp" />
     <ClCompile Include="..\..\src\system\angband-system.cpp" />
+    <ClCompile Include="..\..\src\system\inner-game-data.cpp" />
     <ClCompile Include="..\..\src\system\redrawing-flags-updater.cpp" />
     <ClCompile Include="..\..\src\system\floor-type-definition.cpp" />
     <ClCompile Include="..\..\src\system\grid-type-definition.cpp" />
@@ -900,7 +901,6 @@
     <ClCompile Include="..\..\src\monster\monster-processor.cpp" />
     <ClCompile Include="..\..\src\monster\monster-status.cpp" />
     <ClCompile Include="..\..\src\monster-race\monster-race-hook.cpp" />
-    <ClCompile Include="..\..\src\monster-race\monster-race.cpp" />
     <ClCompile Include="..\..\src\monster-attack\monster-attack-processor.cpp" />
     <ClCompile Include="..\..\src\monster-floor\monster-direction.cpp" />
     <ClCompile Include="..\..\src\monster-floor\monster-move.cpp" />
@@ -1214,6 +1214,7 @@
     <ClInclude Include="..\..\src\io\input-key-requester.h" />
     <ClInclude Include="..\..\src\store\store-key-processor.h" />
     <ClInclude Include="..\..\src\load\info-loader.h" />
+    <ClInclude Include="..\..\src\locale\character-encoding.h" />
     <ClInclude Include="..\..\src\locale\language-switcher.h" />
     <ClInclude Include="..\..\src\locale\utf-8.h" />
     <ClInclude Include="..\..\src\main-win\main-win-cfg-reader.h" />
@@ -1412,6 +1413,7 @@
     <ClInclude Include="..\..\src\system\alloc-entries.h" />
     <ClInclude Include="..\..\src\system\angband-exceptions.h" />
     <ClInclude Include="..\..\src\system\angband-system.h" />
+    <ClInclude Include="..\..\src\system\inner-game-data.h" />
     <ClInclude Include="..\..\src\system\redrawing-flags-updater.h" />
     <ClInclude Include="..\..\src\system\dungeon-data-definition.h" />
     <ClInclude Include="..\..\src\system\floor-type-definition.h" />
@@ -1959,7 +1961,6 @@
     <ClInclude Include="..\..\src\monster\monster-status.h" />
     <ClInclude Include="..\..\src\system\monster-entity.h" />
     <ClInclude Include="..\..\src\monster-race\monster-race-hook.h" />
-    <ClInclude Include="..\..\src\monster-race\monster-race.h" />
     <ClInclude Include="..\..\src\mutation\mutation-calculator.h" />
     <ClInclude Include="..\..\src\object-enchant\object-boost.h" />
     <ClInclude Include="..\..\src\object-enchant\object-curse.h" />

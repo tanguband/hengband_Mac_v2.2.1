@@ -28,7 +28,6 @@
 #include "io/write-diary.h"
 #include "mind/mind-ninja.h"
 #include "monster-floor/monster-lite.h"
-#include "monster-race/monster-race.h"
 #include "monster/monster-describer.h"
 #include "monster/monster-description-types.h"
 #include "monster/monster-info.h"
@@ -354,7 +353,7 @@ bool destroy_area(PlayerType *player_ptr, const POSITION y1, const POSITION x1, 
                 } else {
                     if (record_named_pet && monster.is_named_pet()) {
                         const auto m_name = monster_desc(player_ptr, &monster, MD_INDEF_VISIBLE);
-                        exe_write_diary(player_ptr, DiaryKind::NAMED_PET, RECORD_NAMED_PET_DESTROY, m_name);
+                        exe_write_diary(floor, DiaryKind::NAMED_PET, RECORD_NAMED_PET_DESTROY, m_name);
                     }
 
                     /* Delete the monster (if any) */
