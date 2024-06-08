@@ -25,6 +25,7 @@
 #include "system/baseitem-info.h"
 #include "system/monster-race-info.h"
 #include "term/term-color-types.h"
+#include "tracking/baseitem-tracker.h"
 #include "util/bit-flags-calculator.h"
 #include "util/enum-converter.h"
 #include "util/string-processor.h"
@@ -471,7 +472,7 @@ bool ItemEntity::is_offerable() const
         return false;
     }
 
-    return angband_strchr("pht", monraces_info[i2enum<MonsterRaceId>(this->pval)].symbol_definition.character) != nullptr;
+    return angband_strchr("pht", this->get_monrace().symbol_definition.character) != nullptr;
 }
 
 /*!
@@ -669,14 +670,12 @@ int ItemEntity::get_baseitem_price() const
 
 int ItemEntity::calc_figurine_value() const
 {
-    const auto r_idx = i2enum<MonsterRaceId>(this->pval);
-    return MonraceList::get_instance().calc_figurine_value(r_idx);
+    return this->get_monrace().calc_figurine_value();
 }
 
 int ItemEntity::calc_capture_value() const
 {
-    const auto r_idx = i2enum<MonsterRaceId>(this->pval);
-    return MonraceList::get_instance().calc_capture_value(r_idx);
+    return this->get_monrace().calc_capture_value();
 }
 
 /*!
@@ -876,6 +875,44 @@ std::string ItemEntity::explain_activation() const
     }
 
     return _("何も起きない", "Nothing");
+}
+
+/*!
+ * @brief アイテムのpvalがモンスター種族IDを指しているかチェックする
+ * @return モンスター種族IDの意図で使われているか否か
+ */
+bool ItemEntity::has_monrace() const
+{
+    if ((this->pval < 0) || !this->bi_key.is_monster()) {
+        return false;
+    }
+
+    if (!this->bi_key.is(ItemKindType::CAPTURE) && (this->pval == 0)) {
+        return false;
+    }
+
+    const auto &monraces = MonraceList::get_instance();
+    return this->pval < static_cast<short>(monraces.size());
+}
+
+/*!
+ * @brief アイテムのpvalからモンスター種族を引いて返す
+ * @return モンスター種族定義
+ * @details 死体/骨・モンスターボール・人形・像が該当する.
+ */
+const MonsterRaceInfo &ItemEntity::get_monrace() const
+{
+    if (!this->has_monrace()) {
+        THROW_EXCEPTION(std::logic_error, "This item is not related to monrace!");
+    }
+
+    const auto monrace_id = i2enum<MonsterRaceId>(this->pval);
+    return MonraceList::get_instance().get_monrace(monrace_id);
+}
+
+void ItemEntity::track_baseitem() const
+{
+    BaseitemTracker::get_instance().set_trackee(this->bi_id);
 }
 
 std::string ItemEntity::build_timeout_description(const ActivationType &act) const
@@ -1123,7 +1160,7 @@ uint8_t ItemEntity::get_color() const
         return symbol_config.color;
     }
 
-    return monraces_info[i2enum<MonsterRaceId>(this->pval)].symbol_config.color;
+    return this->get_monrace().symbol_config.color;
 }
 
 /*
