@@ -1289,9 +1289,6 @@
     <ClCompile Include="..\..\src\object-hook\hook-magic.cpp">
       <Filter>object-hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\object-hook\hook-quest.cpp">
-      <Filter>object-hook</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\mind\mind-weaponsmith.cpp">
       <Filter>mind</Filter>
     </ClCompile>
@@ -2503,6 +2500,9 @@
       <Filter>tracking</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\tracking\baseitem-tracker.cpp">
+      <Filter>tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tracking\health-bar-tracker.cpp">
       <Filter>tracking</Filter>
     </ClCompile>
   </ItemGroup>
@@ -4010,9 +4010,6 @@
     <ClInclude Include="..\..\src\object-hook\hook-magic.h">
       <Filter>object-hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\object-hook\hook-quest.h">
-      <Filter>object-hook</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\mind\mind-weaponsmith.h">
       <Filter>mind</Filter>
     </ClInclude>
@@ -5422,6 +5419,9 @@
       <Filter>tracking</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\tracking\baseitem-tracker.h">
+      <Filter>tracking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tracking\health-bar-tracker.h">
       <Filter>tracking</Filter>
     </ClInclude>
   </ItemGroup>

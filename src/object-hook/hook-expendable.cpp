@@ -35,8 +35,7 @@ bool item_tester_hook_eatable(PlayerType *player_ptr, const ItemEntity *o_ptr)
             return true;
         }
     } else if (food_type == PlayerRaceFoodType::CORPSE) {
-        const auto &monrace = o_ptr->get_monrace();
-        if (o_ptr->is_corpse() && angband_strchr("pht", monrace.symbol_definition.character)) {
+        if (o_ptr->is_corpse() && o_ptr->get_monrace().symbol_char_is_any_of("pht")) {
             return true;
         }
     }

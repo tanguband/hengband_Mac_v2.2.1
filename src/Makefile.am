@@ -645,7 +645,6 @@ hengband_SOURCES = \
 	object-hook/hook-expendable.cpp object-hook/hook-expendable.h \
 	object-hook/hook-magic.cpp object-hook/hook-magic.h \
 	object-hook/hook-perception.cpp object-hook/hook-perception.h \
-	object-hook/hook-quest.cpp object-hook/hook-quest.h \
 	object-hook/hook-weapon.cpp object-hook/hook-weapon.h \
 	\
 	object-use/item-use-checker.cpp object-use/item-use-checker.h \
@@ -967,6 +966,7 @@ hengband_SOURCES = \
 	timed-effect/timed-effects.cpp timed-effect/timed-effects.h \
 	\
 	tracking/baseitem-tracker.cpp tracking/baseitem-tracker.h \
+	tracking/health-bar-tracker.cpp tracking/health-bar-tracker.h \
 	tracking/lore-tracker.cpp tracking/lore-tracker.h \
 	\
 	util/angband-files.cpp util/angband-files.h \
