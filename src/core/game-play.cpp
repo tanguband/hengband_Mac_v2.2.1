@@ -52,7 +52,7 @@
 #include "item-info/flavor-initializer.h"
 #include "load/load.h"
 #include "main/sound-of-music.h"
-#include "market/arena-info-table.h"
+#include "market/arena-entry.h"
 #include "market/bounty.h"
 #include "market/building-initializer.h"
 #include "monster-floor/monster-generator.h"
@@ -325,9 +325,9 @@ static void init_riding_pet(PlayerType *player_ptr, bool new_game)
     place_specific_monster(player_ptr, 0, player_ptr->y, player_ptr->x - 1, pet_r_idx, (PM_FORCE_PET | PM_NO_KAGE));
     auto *m_ptr = &player_ptr->current_floor_ptr->m_list[hack_m_idx_ii];
     m_ptr->mspeed = r_ptr->speed;
-    m_ptr->maxhp = r_ptr->hdice * (r_ptr->hside + 1) / 2;
+    m_ptr->maxhp = r_ptr->hit_dice.floored_expected_value();
     m_ptr->max_maxhp = m_ptr->maxhp;
-    m_ptr->hp = r_ptr->hdice * (r_ptr->hside + 1) / 2;
+    m_ptr->hp = r_ptr->hit_dice.floored_expected_value();
     m_ptr->dealt_damage = 0;
     m_ptr->energy_need = ENERGY_NEED() + ENERGY_NEED();
 }
@@ -338,8 +338,8 @@ static void decide_arena_death(PlayerType *player_ptr)
         return;
     }
 
-    auto *floor_ptr = player_ptr->current_floor_ptr;
-    if (!floor_ptr->inside_arena) {
+    auto &floor = *player_ptr->current_floor_ptr;
+    if (!floor.inside_arena) {
         if ((w_ptr->wizard || cheat_live) && !input_check(_("死にますか? ", "Die? "))) {
             cheat_death(player_ptr);
         }
@@ -347,11 +347,12 @@ static void decide_arena_death(PlayerType *player_ptr)
         return;
     }
 
-    floor_ptr->inside_arena = false;
-    if (player_ptr->arena_number > MAX_ARENA_MONS) {
-        player_ptr->arena_number++;
+    floor.inside_arena = false;
+    auto &entries = ArenaEntryList::get_instance();
+    if (entries.is_player_true_victor()) {
+        entries.increment_entry();
     } else {
-        player_ptr->arena_number = -1 - player_ptr->arena_number;
+        entries.set_defeated_entry();
     }
 
     player_ptr->is_dead = false;

@@ -632,6 +632,7 @@
     <ClCompile Include="..\..\src\tracking\lore-tracker.cpp" />
     <ClCompile Include="..\..\src\util\candidate-selector.cpp" />
     <ClCompile Include="..\..\src\util\rng-xoshiro.cpp" />
+    <ClCompile Include="..\..\src\util\dice.cpp" />
     <ClCompile Include="..\..\src\util\sha256.cpp" />
     <ClCompile Include="..\..\src\view\display-inventory.cpp" />
     <ClCompile Include="..\..\src\view\display-map.cpp" />
@@ -887,7 +888,7 @@
     <ClCompile Include="..\..\src\io-dump\special-class-dump.cpp" />
     <ClCompile Include="..\..\src\io\tokenizer.cpp" />
     <ClCompile Include="..\..\src\io\write-diary.cpp" />
-    <ClCompile Include="..\..\src\market\arena-info-table.cpp" />
+    <ClCompile Include="..\..\src\market\arena-entry.cpp" />
     <ClCompile Include="..\..\src\store\articles-on-sale.cpp" />
     <ClCompile Include="..\..\src\store\black-market.cpp" />
     <ClCompile Include="..\..\src\market\building-util.cpp" />
@@ -1828,6 +1829,7 @@
     <ClInclude Include="..\..\src\util\angband-files.h" />
     <ClInclude Include="..\..\src\util\object-sort.h" />
     <ClInclude Include="..\..\src\util\rng-xoshiro.h" />
+    <ClInclude Include="..\..\src\util\dice.h" />
     <ClInclude Include="..\..\src\util\sha256.h" />
     <ClInclude Include="..\..\src\util\string-processor.h" />
     <ClInclude Include="..\..\src\view\display-symbol.h" />
@@ -1874,7 +1876,7 @@
     <ClInclude Include="..\..\src\io-dump\special-class-dump.h" />
     <ClInclude Include="..\..\src\io\tokenizer.h" />
     <ClInclude Include="..\..\src\io\write-diary.h" />
-    <ClInclude Include="..\..\src\market\arena-info-table.h" />
+    <ClInclude Include="..\..\src\market\arena-entry.h" />
     <ClInclude Include="..\..\src\store\articles-on-sale.h" />
     <ClInclude Include="..\..\src\store\black-market.h" />
     <ClInclude Include="..\..\src\market\building-util.h" />

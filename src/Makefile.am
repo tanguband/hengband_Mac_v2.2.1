@@ -402,7 +402,7 @@ hengband_SOURCES = \
 	main-unix/x11-gamma-builder.cpp main-unix/x11-gamma-builder.h \
 	main-unix/x11-type-string.cpp main-unix/x11-type-string.h \
 	\
-	market/arena-info-table.cpp market/arena-info-table.h \
+	market/arena-entry.cpp market/arena-entry.h \
 	market/building-initializer.cpp market/building-initializer.h \
 	market/building-util.cpp market/building-util.h \
 	market/play-gamble.cpp market/play-gamble.h \
@@ -977,6 +977,7 @@ hengband_SOURCES = \
 	util/enum-range.h \
 	util/finalizer.h \
 	util/flag-group.h \
+	util/dice.cpp util/dice.h \
 	util/int-char-converter.h \
 	util/object-sort.cpp util/object-sort.h \
 	util/point-2d.h \

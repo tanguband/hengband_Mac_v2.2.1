@@ -5,7 +5,7 @@
 #include "object-enchant/special-object-flags.h"
 #include "object-enchant/trg-types.h"
 #include "object/object-value.h"
-#include "system/angband-version.h"
+#include "system/angband-system.h"
 #include "system/baseitem-info.h"
 #include "system/item-entity.h"
 #include "system/player-type-definition.h"
@@ -41,12 +41,11 @@ static std::string describe_dam_or_ac(const ItemEntity &item)
     case ItemKindType::SHOT:
     case ItemKindType::BOLT:
     case ItemKindType::ARROW:
-        return format("%dd%d", item.dd, item.ds);
     case ItemKindType::HAFTED:
     case ItemKindType::POLEARM:
     case ItemKindType::SWORD:
     case ItemKindType::DIGGING:
-        return format("%dd%d", item.dd, item.ds);
+        return item.damage_dice.to_string();
     case ItemKindType::BOOTS:
     case ItemKindType::GLOVES:
     case ItemKindType::CLOAK:
@@ -122,7 +121,8 @@ SpoilerOutputResultType spoil_obj_desc()
         return SpoilerOutputResultType::FILE_OPEN_FAILED;
     }
 
-    ofs << format("Spoiler File -- Basic Items (%s)\n\n\n", get_version().data());
+    constexpr auto fmt_version = "Spoiler File -- Basic Items (%s)\n\n\n";
+    ofs << format(fmt_version, AngbandSystem::get_instance().build_version_expression(VersionExpression::FULL).data());
     ofs << format("%-37s%8s%7s%5s %40s%9s\n", "Description", "Dam/AC", "Wgt", "Lev", "Chance", "Cost");
     ofs << format("%-37s%8s%7s%5s %40s%9s\n", "-------------------------------------", "------", "---", "---", "----------------", "----");
 
