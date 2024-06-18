@@ -699,20 +699,6 @@ void wiz_dump_options(void)
 }
 
 /*!
- * @brief プレイ日数を変更する / Set gametime.
- * @return 実際に変更を行ったらTRUEを返す
- */
-void set_gametime(void)
-{
-    const auto game_time = input_integer("Dungeon Turn", 0, w_ptr->dungeon_turn_limit - 1);
-    if (!game_time) {
-        return;
-    }
-
-    w_ptr->dungeon_turn = w_ptr->game_turn = *game_time;
-}
-
-/*!
  * @brief プレイヤー近辺の全モンスターを消去する / Delete all nearby monsters
  */
 void wiz_zap_surrounding_monsters(PlayerType *player_ptr)
@@ -762,7 +748,7 @@ void cheat_death(PlayerType *player_ptr)
     }
     player_ptr->age++;
 
-    w_ptr->noscore |= 0x0001;
+    AngbandWorld::get_instance().noscore |= 0x0001;
     msg_print(_("ウィザードモードに念を送り、死を欺いた。", "You invoke wizard mode and cheat death."));
     msg_print(nullptr);
 

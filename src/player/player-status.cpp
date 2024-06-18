@@ -140,7 +140,7 @@ static int16_t calc_to_hit_bow(PlayerType *player_ptr, bool is_real_value);
 static int16_t calc_to_damage_misc(PlayerType *player_ptr);
 static int16_t calc_to_hit_misc(PlayerType *player_ptr);
 
-static DICE_NUMBER calc_to_weapon_dice_num(PlayerType *player_ptr, INVENTORY_IDX slot);
+static int calc_to_weapon_dice_num(PlayerType *player_ptr, INVENTORY_IDX slot);
 static player_hand main_attack_hand(PlayerType *player_ptr);
 
 /*** Player information ***/
@@ -404,7 +404,7 @@ static void update_bonuses(PlayerType *player_ptr)
         rfu.set_flag(SubWindowRedrawingFlag::PLAYER);
     }
 
-    if (w_ptr->character_xtra) {
+    if (AngbandWorld::get_instance().character_xtra) {
         return;
     }
 
@@ -423,18 +423,12 @@ static void update_max_hitpoints(PlayerType *player_ptr)
     int bonus = ((int)(adj_con_mhp[player_ptr->stat_index[A_CON]]) - 128) * player_ptr->lev / 4;
     int mhp = player_ptr->player_hp[player_ptr->lev - 1];
 
-    byte tmp_hitdie;
     PlayerClass pc(player_ptr);
     auto is_sorcerer = pc.equals(PlayerClassType::SORCERER);
     if (player_ptr->mimic_form != MimicKindType::NONE) {
         auto r_mhp = mimic_info.at(player_ptr->mimic_form).r_mhp;
-        if (is_sorcerer) {
-            tmp_hitdie = r_mhp / 2 + cp_ptr->c_mhp + ap_ptr->a_mhp;
-        } else {
-            tmp_hitdie = r_mhp + cp_ptr->c_mhp + ap_ptr->a_mhp;
-        }
-
-        mhp = mhp * tmp_hitdie / player_ptr->hitdie;
+        const auto mimic_hit_dice = Dice(1, (is_sorcerer ? r_mhp / 2 : r_mhp) + cp_ptr->c_mhp + ap_ptr->a_mhp);
+        mhp = mhp * mimic_hit_dice.maxroll() / player_ptr->hit_dice.maxroll();
     }
 
     if (is_sorcerer) {
@@ -501,7 +495,8 @@ static void update_max_hitpoints(PlayerType *player_ptr)
  */
 static void update_num_of_spells(PlayerType *player_ptr)
 {
-    if ((mp_ptr->spell_book == ItemKindType::NONE) || !w_ptr->character_generated || w_ptr->character_xtra) {
+    const auto &world = AngbandWorld::get_instance();
+    if ((mp_ptr->spell_book == ItemKindType::NONE) || !world.character_generated || world.character_xtra) {
         return;
     }
 
@@ -1003,7 +998,7 @@ static void update_max_mana(PlayerType *player_ptr)
         rfu.set_flags(flags);
     }
 
-    if (w_ptr->character_xtra) {
+    if (AngbandWorld::get_instance().character_xtra) {
         return;
     }
 
@@ -2051,7 +2046,7 @@ void put_equipment_warning(PlayerType *player_ptr)
 
         if (player_ptr->is_icky_wield[i]) {
             msg_print(_("今の装備はどうも自分にふさわしくない気がする。", "You do not feel comfortable with your weapon."));
-            if (w_ptr->is_loading_now) {
+            if (AngbandWorld::get_instance().is_loading_now) {
                 chg_virtue(player_ptr, Virtue::FAITH, -1);
             }
         } else if (has_melee_weapon(player_ptr, INVEN_MAIN_HAND + i)) {
@@ -2085,7 +2080,7 @@ void put_equipment_warning(PlayerType *player_ptr)
     if ((pc.is_martial_arts_pro() || pc.equals(PlayerClassType::NINJA)) && (heavy_armor(player_ptr) != player_ptr->monk_notify_aux)) {
         if (heavy_armor(player_ptr)) {
             msg_print(_("装備が重くてバランスを取れない。", "The weight of your armor disrupts your balance."));
-            if (w_ptr->is_loading_now) {
+            if (AngbandWorld::get_instance().is_loading_now) {
                 chg_virtue(player_ptr, Virtue::HARMONY, -1);
             }
         } else {
@@ -2641,7 +2636,7 @@ static int16_t calc_to_hit_misc(PlayerType *player_ptr)
     return to_hit;
 }
 
-static DICE_NUMBER calc_to_weapon_dice_num(PlayerType *player_ptr, INVENTORY_IDX slot)
+static int calc_to_weapon_dice_num(PlayerType *player_ptr, INVENTORY_IDX slot)
 {
     auto *o_ptr = &player_ptr->inventory_list[slot];
     return (player_ptr->riding > 0) && o_ptr->is_lance() ? 2 : 0;
@@ -2717,7 +2712,8 @@ void update_creature(PlayerType *player_ptr)
         update_num_of_spells(player_ptr);
     }
 
-    if (!w_ptr->character_generated || (w_ptr->character_icky_depth > 0)) {
+    const auto &world = AngbandWorld::get_instance();
+    if (!world.character_generated || (world.character_icky_depth > 0)) {
         return;
     }
 
@@ -2826,7 +2822,7 @@ void wreck_the_pattern(PlayerType *player_ptr)
     msg_print(_("何か恐ろしい事が起こった！", "Something terrible happens!"));
 
     if (!is_invuln(player_ptr)) {
-        take_hit(player_ptr, DAMAGE_NOESCAPE, damroll(10, 8), _("パターン損壊", "corrupting the Pattern"));
+        take_hit(player_ptr, DAMAGE_NOESCAPE, Dice::roll(10, 8), _("パターン損壊", "corrupting the Pattern"));
     }
 
     auto to_ruin = randint1(45) + 35;
@@ -3155,7 +3151,7 @@ long calc_score(PlayerType *player_ptr)
 
     if ((player_ptr->ppersonality == PERSONALITY_MUNCHKIN) && point) {
         point = 1;
-        if (w_ptr->total_winner) {
+        if (AngbandWorld::get_instance().total_winner) {
             point = 2;
         }
     }
