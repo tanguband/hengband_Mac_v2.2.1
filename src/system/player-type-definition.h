@@ -67,7 +67,6 @@ public:
 
     POSITION wilderness_x{}; /* Coordinates in the wilderness */
     POSITION wilderness_y{};
-    bool wild_mode{};
 
     int mhp{}; /* Max hit pts */
     int chp{}; /* Cur hit pts */
@@ -396,6 +395,7 @@ public:
     bool is_located_at(const Pos2D &pos) const;
     bool in_saved_floor() const;
     int calc_life_rating() const;
+    bool try_resist_eldritch_horror() const;
 
 private:
     std::shared_ptr<TimedEffects> timed_effects;
