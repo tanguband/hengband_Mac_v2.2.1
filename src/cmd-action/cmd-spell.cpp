@@ -699,7 +699,7 @@ static void change_realm2(PlayerType *player_ptr, int16_t next_realm)
     player_ptr->spell_forgotten2 = 0L;
 
     constexpr auto fmt_realm = _("魔法の領域を%sから%sに変更した。", "changed magic realm from %s to %s.");
-    const auto mes = format(fmt_realm, realm_names[player_ptr->realm2].data(), realm_names[next_realm].data());
+    const auto mes = format(fmt_realm, PlayerRealm(player_ptr).realm2().get_name().data(), PlayerRealm::get_name(next_realm).data());
     exe_write_diary(*player_ptr->current_floor_ptr, DiaryKind::DESCRIPTION, 0, mes);
     player_ptr->old_realm |= 1U << (player_ptr->realm2 - 1);
     player_ptr->realm2 = next_realm;
@@ -770,9 +770,9 @@ void do_cmd_study(PlayerType *player_ptr)
     const auto tval = o_ptr->bi_key.tval();
     const auto sval = *o_ptr->bi_key.sval();
     PlayerRealm pr(player_ptr);
-    if (tval == pr.get_realm2_book()) {
+    if (tval == pr.realm2().get_book()) {
         increment = 32;
-    } else if (tval != pr.get_realm1_book()) {
+    } else if (tval != pr.realm1().get_book()) {
         if (!input_check(_("本当に魔法の領域を変更しますか？", "Really, change magic realm? "))) {
             return;
         }
@@ -1003,7 +1003,7 @@ bool do_cmd_cast(PlayerType *player_ptr)
 
     const auto tval = o_ptr->bi_key.tval();
     const auto sval = *o_ptr->bi_key.sval();
-    if (!is_every_magic && (tval == PlayerRealm(player_ptr).get_realm2_book())) {
+    if (!is_every_magic && (tval == PlayerRealm(player_ptr).realm2().get_book())) {
         increment = 32;
     }
 
