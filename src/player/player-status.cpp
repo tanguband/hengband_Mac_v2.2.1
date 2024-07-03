@@ -519,9 +519,10 @@ static void update_num_of_spells(PlayerType *player_ptr)
         bonus = 4;
     }
 
+    PlayerRealm pr(player_ptr);
     if (pc.equals(PlayerClassType::SAMURAI)) {
         num_allowed = 32;
-    } else if (player_ptr->realm2 == REALM_NONE) {
+    } else if (!pr.realm2().is_available()) {
         num_allowed = (num_allowed + 1) / 2;
         if (num_allowed > (32 + bonus)) {
             num_allowed = 32 + bonus;
@@ -543,7 +544,6 @@ static void update_num_of_spells(PlayerType *player_ptr)
         }
     }
 
-    PlayerRealm pr(player_ptr);
     player_ptr->new_spells = num_allowed + player_ptr->add_spells + num_boukyaku - player_ptr->learned_spells;
     for (int i = 63; i >= 0; i--) {
         if (!player_ptr->spell_learned1 && !player_ptr->spell_learned2) {
@@ -567,28 +567,23 @@ static void update_num_of_spells(PlayerType *player_ptr)
             continue;
         }
 
-        int16_t which;
         if (j < 32) {
             set_bits(player_ptr->spell_forgotten1, (1UL << j));
-            which = player_ptr->realm1;
         } else {
             set_bits(player_ptr->spell_forgotten2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
         if (j < 32) {
             reset_bits(player_ptr->spell_learned1, (1UL << j));
-            which = player_ptr->realm1;
         } else {
             reset_bits(player_ptr->spell_learned2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
-        const auto spell_name = exe_spell(player_ptr, which, j % 32, SpellProcessType::NAME);
+        const auto &spell_name = realm.get_spell_name(j % 32);
 #ifdef JP
-        msg_format("%sの%sを忘れてしまった。", spell_name->data(), spell_category.data());
+        msg_format("%sの%sを忘れてしまった。", spell_name.data(), spell_category.data());
 #else
-        msg_format("You have forgotten the %s of %s.", spell_category.data(), spell_name->data());
+        msg_format("You have forgotten the %s of %s.", spell_category.data(), spell_name.data());
 #endif
         player_ptr->new_spells++;
     }
@@ -612,28 +607,24 @@ static void update_num_of_spells(PlayerType *player_ptr)
             continue;
         }
 
-        int16_t which;
         if (j < 32) {
             set_bits(player_ptr->spell_forgotten1, (1UL << j));
-            which = player_ptr->realm1;
         } else {
             set_bits(player_ptr->spell_forgotten2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
         if (j < 32) {
             reset_bits(player_ptr->spell_learned1, (1UL << j));
-            which = player_ptr->realm1;
         } else {
             reset_bits(player_ptr->spell_learned2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
-        const auto spell_name = exe_spell(player_ptr, which, j % 32, SpellProcessType::NAME);
+        const auto &realm = (j < 32) ? pr.realm1() : pr.realm2();
+        const auto &spell_name = realm.get_spell_name(j % 32);
 #ifdef JP
-        msg_format("%sの%sを忘れてしまった。", spell_name->data(), spell_category.data());
+        msg_format("%sの%sを忘れてしまった。", spell_name.data(), spell_category.data());
 #else
-        msg_format("You have forgotten the %s of %s.", spell_category.data(), spell_name->data());
+        msg_format("You have forgotten the %s of %s.", spell_category.data(), spell_name.data());
 #endif
         player_ptr->new_spells++;
     }
@@ -663,33 +654,29 @@ static void update_num_of_spells(PlayerType *player_ptr)
             continue;
         }
 
-        int16_t which;
         if (j < 32) {
             reset_bits(player_ptr->spell_forgotten1, (1UL << j));
-            which = player_ptr->realm1;
         } else {
             reset_bits(player_ptr->spell_forgotten2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
         if (j < 32) {
             set_bits(player_ptr->spell_learned1, (1UL << j));
-            which = player_ptr->realm1;
+
         } else {
             set_bits(player_ptr->spell_learned2, (1UL << (j - 32)));
-            which = player_ptr->realm2;
         }
 
-        const auto spell_name = exe_spell(player_ptr, which, j % 32, SpellProcessType::NAME);
+        const auto &spell_name = realm.get_spell_name(j % 32);
 #ifdef JP
-        msg_format("%sの%sを思い出した。", spell_name->data(), spell_category.data());
+        msg_format("%sの%sを思い出した。", spell_name.data(), spell_category.data());
 #else
-        msg_format("You have remembered the %s of %s.", spell_category.data(), spell_name->data());
+        msg_format("You have remembered the %s of %s.", spell_category.data(), spell_name.data());
 #endif
         player_ptr->new_spells--;
     }
 
-    if (player_ptr->realm2 == REALM_NONE) {
+    if (!pr.realm2().is_available()) {
         int k = 0;
         for (int j = 0; j < 32; j++) {
             const auto &spell = pr.realm1().get_spell_info(j);
@@ -1815,7 +1802,7 @@ static ARMOUR_CLASS calc_to_ac(PlayerType *player_ptr, bool is_real_value)
         }
     }
 
-    if (player_ptr->realm1 == REALM_HEX) {
+    if (PlayerRealm(player_ptr).is_realm_hex()) {
         if (SpellHex(player_ptr).is_spelling_specific(HEX_ICE_ARMOR)) {
             ac += 30;
         }
@@ -2118,7 +2105,7 @@ static short calc_to_damage(PlayerType *player_ptr, INVENTORY_IDX slot, bool is_
         }
     }
 
-    if ((player_ptr->realm1 == REALM_HEX) && o_ptr->is_cursed()) {
+    if (PlayerRealm(player_ptr).is_realm_hex() && o_ptr->is_cursed()) {
         if (SpellHex(player_ptr).is_spelling_specific(HEX_RUNESWORD)) {
             if (o_ptr->curse_flags.has(CurseTraitType::CURSED)) {
                 damage += 5;
@@ -2355,7 +2342,7 @@ static short calc_to_hit(PlayerType *player_ptr, INVENTORY_IDX slot, bool is_rea
         }
 
         /* Hex realm bonuses */
-        if ((player_ptr->realm1 == REALM_HEX) && o_ptr->is_cursed()) {
+        if (PlayerRealm(player_ptr).is_realm_hex() && o_ptr->is_cursed()) {
             if (o_ptr->curse_flags.has(CurseTraitType::CURSED)) {
                 hit += 5;
             }

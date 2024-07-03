@@ -273,7 +273,8 @@ static bool spell_okay(PlayerType *player_ptr, int spell_id, bool learned, bool 
     }
 
     /* Spell is forgotten */
-    if ((use_realm == player_ptr->realm2) ? (player_ptr->spell_forgotten2 & (1UL << spell_id)) : (player_ptr->spell_forgotten1 & (1UL << spell_id))) {
+    PlayerRealm pr(player_ptr);
+    if (pr.realm2().equals(use_realm) ? (player_ptr->spell_forgotten2 & (1UL << spell_id)) : (player_ptr->spell_forgotten1 & (1UL << spell_id))) {
         /* Never okay */
         return false;
     }
@@ -283,7 +284,7 @@ static bool spell_okay(PlayerType *player_ptr, int spell_id, bool learned, bool 
     }
 
     /* Spell is learned */
-    if ((use_realm == player_ptr->realm2) ? (player_ptr->spell_learned2 & (1UL << spell_id)) : (player_ptr->spell_learned1 & (1UL << spell_id))) {
+    if (pr.realm2().equals(use_realm) ? (player_ptr->spell_learned2 & (1UL << spell_id)) : (player_ptr->spell_learned1 & (1UL << spell_id))) {
         /* Always true */
         return !study_pray;
     }
@@ -357,8 +358,9 @@ static int get_spell(PlayerType *player_ptr, SPELL_IDX *sn, std::string_view pro
     }
 
     PlayerClass pc(player_ptr);
+    PlayerRealm pr(player_ptr);
     auto is_every_magic = pc.is_every_magic();
-    if (((use_realm) != player_ptr->realm1) && ((use_realm) != player_ptr->realm2) && !is_every_magic) {
+    if (!pr.realm1().equals(use_realm) && !pr.realm2().equals(use_realm) && !is_every_magic) {
         return false;
     }
     if (is_every_magic && !is_magic(use_realm)) {
@@ -560,7 +562,7 @@ static FuncItemTester get_castable_spellbook_tester(PlayerType *player_ptr)
 
 static FuncItemTester get_learnable_spellbook_tester(PlayerType *player_ptr)
 {
-    if (player_ptr->realm2 == REALM_NONE) {
+    if (!PlayerRealm(player_ptr).realm2().is_available()) {
         return get_castable_spellbook_tester(player_ptr);
     } else {
         return FuncItemTester(item_tester_learn_spell, player_ptr);
@@ -584,7 +586,7 @@ void do_cmd_browse(PlayerType *player_ptr)
 
     /* Warriors are illiterate */
     PlayerClass pc(player_ptr);
-    if (!(player_ptr->realm1 || player_ptr->realm2) && !pc.is_every_magic()) {
+    if (!PlayerRealm(player_ptr).realm1().is_available() && !pc.is_every_magic()) {
         msg_print(_("本を読むことができない！", "You cannot read books!"));
         return;
     }
@@ -667,8 +669,8 @@ void do_cmd_browse(PlayerType *player_ptr)
         term_erase(14, 12);
         term_erase(14, 11);
 
-        const auto spell_desc = exe_spell(player_ptr, use_realm, spell, SpellProcessType::DESCRIPTION);
-        display_wrap_around(*spell_desc, 62, 11, 15);
+        const auto &spell_desc = PlayerRealm::get_spell_description(use_realm, spell);
+        display_wrap_around(spell_desc, 62, 11, 15);
     }
     screen_load();
 }
@@ -727,7 +729,8 @@ void do_cmd_study(PlayerType *player_ptr)
     /* Spells of realm2 will have an increment of +32 */
     SPELL_IDX spell = -1;
     const auto spell_category = spell_category_name(mp_ptr->spell_book);
-    if (!player_ptr->realm1) {
+    PlayerRealm pr(player_ptr);
+    if (!pr.realm1().is_available()) {
         msg_print(_("本を読むことができない！", "You cannot read books!"));
         return;
     }
@@ -769,7 +772,6 @@ void do_cmd_study(PlayerType *player_ptr)
 
     const auto tval = o_ptr->bi_key.tval();
     const auto sval = *o_ptr->bi_key.sval();
-    PlayerRealm pr(player_ptr);
     if (tval == pr.realm2().get_book()) {
         increment = 32;
     } else if (tval != pr.realm1().get_book()) {
@@ -850,17 +852,17 @@ void do_cmd_study(PlayerType *player_ptr)
     if (learned) {
         auto max_exp = PlayerSkill::spell_exp_at((spell < 32) ? PlayerSkillRank::MASTER : PlayerSkillRank::EXPERT);
         const auto old_exp = player_ptr->spell_exp[spell];
-        const auto realm = increment ? player_ptr->realm2 : player_ptr->realm1;
-        const auto spell_name = exe_spell(player_ptr, realm, spell % 32, SpellProcessType::NAME);
+        const auto &realm = increment ? pr.realm2() : pr.realm1();
+        const auto &spell_name = realm.get_spell_name(spell % 32);
 
         if (old_exp >= max_exp) {
             msg_format(_("その%sは完全に使いこなせるので学ぶ必要はない。", "You don't need to study this %s anymore."), spell_category.data());
             return;
         }
 #ifdef JP
-        if (!input_check(format("%sの%sをさらに学びます。よろしいですか？", spell_name->data(), spell_category.data())))
+        if (!input_check(format("%sの%sをさらに学びます。よろしいですか？", spell_name.data(), spell_category.data())))
 #else
-        if (!input_check(format("You will study a %s of %s again. Are you sure? ", spell_category.data(), spell_name->data())))
+        if (!input_check(format("You will study a %s of %s again. Are you sure? ", spell_category.data(), spell_name.data())))
 #endif
         {
             return;
@@ -868,7 +870,7 @@ void do_cmd_study(PlayerType *player_ptr)
 
         auto new_rank = PlayerSkill(player_ptr).gain_spell_skill_exp_over_learning(spell);
         auto new_rank_str = PlayerSkill::skill_rank_str(new_rank);
-        msg_format(_("%sの熟練度が%sに上がった。", "Your proficiency of %s is now %s rank."), spell_name->data(), new_rank_str);
+        msg_format(_("%sの熟練度が%sに上がった。", "Your proficiency of %s is now %s rank."), spell_name.data(), new_rank_str);
     } else {
         /* Find the next open entry in "player_ptr->spell_order[]" */
         int i;
@@ -883,16 +885,16 @@ void do_cmd_study(PlayerType *player_ptr)
         player_ptr->spell_order[i++] = spell;
 
         /* Mention the result */
-        const auto realm = increment ? player_ptr->realm2 : player_ptr->realm1;
-        const auto spell_name = exe_spell(player_ptr, realm, spell % 32, SpellProcessType::NAME);
+        const auto &realm = increment ? pr.realm2() : pr.realm1();
+        const auto &spell_name = realm.get_spell_name(spell % 32);
 #ifdef JP
         if (mp_ptr->spell_book == ItemKindType::MUSIC_BOOK) {
-            msg_format("%sを学んだ。", spell_name->data());
+            msg_format("%sを学んだ。", spell_name.data());
         } else {
-            msg_format("%sの%sを学んだ。", spell_name->data(), spell_category.data());
+            msg_format("%sの%sを学んだ。", spell_name.data(), spell_category.data());
         }
 #else
-        msg_format("You have learned the %s of %s.", spell_category.data(), spell_name->data());
+        msg_format("You have learned the %s of %s.", spell_category.data(), spell_name.data());
 #endif
     }
 
@@ -943,7 +945,8 @@ bool do_cmd_cast(PlayerType *player_ptr)
     /* Require spell ability */
     PlayerClass pc(player_ptr);
     auto is_every_magic = pc.is_every_magic();
-    if (!player_ptr->realm1 && !is_every_magic) {
+    PlayerRealm pr(player_ptr);
+    if (!pr.realm1().is_available() && !is_every_magic) {
         msg_print(_("呪文を唱えられない！", "You cannot cast spells!"));
         return false;
     }
@@ -963,7 +966,7 @@ bool do_cmd_cast(PlayerType *player_ptr)
         return false;
     }
 
-    if (player_ptr->realm1 == REALM_HEX) {
+    if (pr.is_realm_hex()) {
         if (SpellHex(player_ptr).is_casting_full_capacity()) {
             auto flag = false;
             msg_print(_("これ以上新しい呪文を詠唱することはできない。", "Can not cast more spells."));
@@ -1171,7 +1174,7 @@ bool do_cmd_cast(PlayerType *player_ptr)
             int e = spell.sexp;
 
             /* The spell worked */
-            if (realm == player_ptr->realm1) {
+            if (pr.realm1().equals(realm)) {
                 player_ptr->spell_worked1 |= (1UL << spell_id);
             } else {
                 player_ptr->spell_worked2 |= (1UL << spell_id);

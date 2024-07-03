@@ -1,8 +1,11 @@
 #pragma once
 
+#include "external-lib/include-json.h"
 #include "system/angband.h"
-#include "util/flag-group.h"
-#include <array>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 #include <vector>
 
 constexpr int SPELLS_IN_REALM = 32;
@@ -20,6 +23,9 @@ inline const std::unordered_map<std::string_view, int> realms_list = {
     { "CRAFT", 7 },
     { "DEMON", 8 },
     { "CRUSADE", 9 },
+    { "MUSIC", 15 },
+    { "HISSATSU", 16 },
+    { "HEX", 17 },
 };
 
 class SpellInfo {
@@ -39,13 +45,18 @@ public:
     SpellInfoList &operator=(SpellInfoList &&) = delete;
     ~SpellInfoList() = default;
 
-    void initiallize();
+    void initialize();
+    errr parse(nlohmann::json &spell_data);
 
     static SpellInfoList &get_instance();
-    std::vector<std::vector<SpellInfo>> spell_list{};
+
+    std::optional<short> get_spell_id(int realm, std::string_view spell_tag) const;
+    const SpellInfo &get_spell_info(int realm, int spell_id) const;
 
 private:
     SpellInfoList() = default;
 
     static SpellInfoList instance;
+
+    std::vector<std::vector<SpellInfo>> spell_list{};
 };
