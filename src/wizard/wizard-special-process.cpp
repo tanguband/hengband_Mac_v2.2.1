@@ -61,6 +61,7 @@
 #include "player-status/player-energy.h"
 #include "player/digestion-processor.h"
 #include "player/patron.h"
+#include "player/player-realm.h"
 #include "player/player-skill.h"
 #include "player/player-status-table.h"
 #include "player/player-status.h"
@@ -637,18 +638,18 @@ void wiz_reset_class(PlayerType *player_ptr)
  */
 void wiz_reset_realms(PlayerType *player_ptr)
 {
-    const auto new_realm1 = input_numerics("1st Realm (None=0)", 0, REALM_MAX - 1, player_ptr->realm1);
+    PlayerRealm pr(player_ptr);
+    const auto new_realm1 = input_numerics("1st Realm (None=0)", 0, enum2i(RealmType::MAX) - 1, pr.realm1().to_enum());
     if (!new_realm1) {
         return;
     }
 
-    const auto new_realm2 = input_numerics("2nd Realm (None=0)", 0, REALM_MAX - 1, player_ptr->realm2);
+    const auto new_realm2 = input_numerics("2nd Realm (None=0)", 0, enum2i(RealmType::MAX) - 1, pr.realm2().to_enum());
     if (!new_realm2) {
         return;
     }
 
-    player_ptr->realm1 = *new_realm1;
-    player_ptr->realm2 = *new_realm2;
+    pr.set(*new_realm1, *new_realm2);
     change_birth_flags();
     handle_stuff(player_ptr);
 }

@@ -7,7 +7,6 @@
 #include "perception/object-perception.h"
 #include "player-base/player-class.h"
 #include "player/player-realm.h"
-#include "realm/realm-names-table.h"
 #include "spell/spell-info.h"
 #include "system/item-entity.h"
 #include "system/player-type-definition.h"
@@ -81,7 +80,7 @@ void display_koff(PlayerType *player_ptr)
     const auto item_name = describe_flavor(player_ptr, &item, (OD_OMIT_PREFIX | OD_NAME_ONLY | OD_STORE));
     term_putstr(0, 0, -1, TERM_WHITE, item_name);
     const auto sval = *item.bi_key.sval();
-    const short use_realm = tval2realm(item.bi_key.tval());
+    const auto use_realm = PlayerRealm::get_realm_of_book(item.bi_key.tval());
 
     PlayerRealm pr(player_ptr);
     if (pr.realm1().is_available() || pr.realm2().is_available()) {
@@ -93,10 +92,10 @@ void display_koff(PlayerType *player_ptr)
         if (!pc.is_every_magic()) {
             return;
         }
-        if (!is_magic(use_realm)) {
+        if (!PlayerRealm::is_magic(use_realm)) {
             return;
         }
-        if (pc.equals(PlayerClassType::RED_MAGE) && (use_realm != REALM_ARCANE) && (sval > 1)) {
+        if (pc.equals(PlayerClassType::RED_MAGE) && (use_realm != RealmType::ARCANE) && (sval > 1)) {
             return;
         }
     }
