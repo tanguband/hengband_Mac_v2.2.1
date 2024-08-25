@@ -529,7 +529,7 @@ hengband_SOURCES = \
 	monster-race/race-misc-flags.h \
 	monster-race/race-population-flags.h \
 	monster-race/race-resistance-mask.cpp monster-race/race-resistance-mask.h \
-	monster-race/race-sex-const.cpp monster-race/race-sex-const.h \
+	monster-race/race-sex.h \
 	monster-race/race-speak-flags.h \
 	monster-race/race-special-flags.h \
 	monster-race/race-visual-flags.h \
@@ -1068,6 +1068,7 @@ EXTRA_hengband_SOURCES = \
 	main-win/wav-reader.cpp main-win/wav-reader.h \
 	main-cap.cpp \
 	test/test-sha256.cpp \
+	test/test-probability-table.cpp \
 	wall.bmp \
 	stdafx.cpp stdafx.h
 
