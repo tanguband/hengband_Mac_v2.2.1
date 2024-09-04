@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -193,7 +193,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -289,7 +289,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -386,7 +386,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -403,7 +403,7 @@ jobs:
           echo "draft=$draft" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Source Archive Path
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.SRC_ARTIFACT }}
 
@@ -414,12 +414,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Source Archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Mac English Archive Path
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.MAC_ENGLISH_ARTIFACT }}
 
@@ -430,12 +430,12 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Mac English Archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.MAC_ENGLISH_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Mac Japanese Archive Path
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.MAC_JAPANESE_ARTIFACT }}
 
@@ -446,7 +446,7 @@ jobs:
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
       - name: Download Artifact with Mac Japanese Archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.MAC_JAPANESE_ARCHIVE_ARTIFACT }}
 
